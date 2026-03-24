@@ -13,8 +13,8 @@ const epilogue = Epilogue({
 });
 
 export const metadata: Metadata = {
-  title: "DigitalOcean Control Panel",
-  description: "DigitalOcean cloud control panel UX prototype",
+  title: "Seashell UX",
+  description: "Cloud control panel UX prototype",
 };
 
 export default function RootLayout({

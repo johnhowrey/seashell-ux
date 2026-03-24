@@ -77,7 +77,7 @@ function getMergedDims(
 
 export default function Page() {
   const [variant, setVariant] = useState<ShellVariant>("standard");
-  const [colorMode, setColorMode] = useState<ColorMode>("digitalocean");
+  const [colorMode, setColorMode] = useState<ColorMode>("default");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
 

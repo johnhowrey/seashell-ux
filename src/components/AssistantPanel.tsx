@@ -295,7 +295,7 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
       {/* Body */}
       <Body $dims={dims}>
         <WelcomeHeading $dims={dims}>
-          👋 I&rsquo;m your DigitalOcean AI Assistant
+          👋 I&rsquo;m your AI Assistant
         </WelcomeHeading>
         <WelcomeSub $dims={dims}>What can I help you with?</WelcomeSub>
 

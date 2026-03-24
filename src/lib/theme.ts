@@ -1,5 +1,5 @@
 export type ShellVariant = "standard" | "floating" | "compact" | "zen";
-export type ColorMode = "digitalocean" | "light" | "dark";
+export type ColorMode = "default" | "light" | "dark";
 
 export interface ShellDims {
   sidebarCollapsed: number;
@@ -127,8 +127,8 @@ export const colorModes: Record<
   ColorMode,
   { name: string; description: string; accent: string; bg: string; surface: string; text: string; border: string }
 > = {
-  digitalocean: {
-    name: "DigitalOcean",
+  default: {
+    name: "Default",
     description: "Blue branding, teal accents.",
     accent: "#0f62fe",
     bg: "#f4f5f6",
