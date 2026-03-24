@@ -47,6 +47,7 @@ const MainArea = styled.div<{ $radius: number }>`
 `;
 
 const ContentRow = styled.div`
+  position: relative;
   display: flex;
   flex: 1;
   min-height: 0;

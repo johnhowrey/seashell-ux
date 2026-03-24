@@ -2,6 +2,7 @@
 
 import React from "react";
 import styled from "styled-components";
+import Link from "next/link";
 import {
   ShellVariant,
   ColorMode,
@@ -10,6 +11,7 @@ import {
   colorModes,
   accessibilityOptions,
 } from "../lib/theme";
+import { icons } from "../lib/icons";
 
 interface MainContentProps {
   variant: ShellVariant;
@@ -33,6 +35,7 @@ const Wrapper = styled.main<{
   padding: 32px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
   ${(p) =>
     p.$floating &&
     `
@@ -42,22 +45,24 @@ const Wrapper = styled.main<{
 `;
 
 const SectionHeading = styled.h2<{ $color: string }>`
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 600;
-  color: ${(p) => p.$color};
-  margin-bottom: 16px;
+  color: #878787;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px 0;
 `;
 
 const Section = styled.section`
-  margin-top: 32px;
+  margin-bottom: 32px;
 `;
 
 /* ── Card Grid ── */
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 `;
 
 const Card = styled.div<{
@@ -70,7 +75,7 @@ const Card = styled.div<{
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -91,7 +96,7 @@ const ActiveBadge = styled.span<{ $accent: string }>`
 /* ── Variant Preview ── */
 
 const PreviewArea = styled.div<{ $bg: string }>`
-  height: 120px;
+  height: 80px;
   background: ${(p) => p.$bg};
   padding: 8px;
   position: relative;
@@ -99,7 +104,7 @@ const PreviewArea = styled.div<{ $bg: string }>`
 `;
 
 const CardInfo = styled.div`
-  padding: 12px 16px;
+  padding: 16px;
 `;
 
 const CardName = styled.div<{ $color: string }>`
@@ -110,8 +115,9 @@ const CardName = styled.div<{ $color: string }>`
 
 const CardDesc = styled.div<{ $color: string }>`
   font-size: 12px;
-  color: ${(p) => p.$color};
+  color: #888888;
   margin-top: 4px;
+  line-height: 1.4;
 `;
 
 /* ── Mini Shell Mockup ── */
@@ -173,7 +179,7 @@ const MiniCard = styled.div<{
 /* ── Color Mode Preview ── */
 
 const ColorPreviewArea = styled.div<{ $bg: string }>`
-  height: 120px;
+  height: 80px;
   background: ${(p) => p.$bg};
   padding: 8px;
   display: flex;
@@ -227,35 +233,41 @@ const ToggleThumb = styled.span<{ $on: boolean }>`
   transition: left 0.15s ease;
 `;
 
-/* ── Demo Page Pills ── */
+/* ── Demo Page Tiles ── */
 
-const PillList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`;
-
-const Pill = styled.button<{
+const DemoTile = styled(Link)<{
   $border: string;
   $color: string;
   $accent: string;
+  $surface: string;
 }>`
-  display: inline-flex;
-  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
   border: 1px solid ${(p) => p.$border};
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: ${(p) => p.$color};
-  margin-right: 8px;
-  margin-bottom: 8px;
+  border-radius: 8px;
+  background: ${(p) => p.$surface};
+  text-decoration: none;
   cursor: pointer;
-  background: transparent;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 
   &:hover {
     border-color: ${(p) => p.$accent};
-    color: ${(p) => p.$accent};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
+`;
+
+const DemoTileLabel = styled.span<{ $color: string }>`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${(p) => p.$color};
+`;
+
+const DemoTileArrow = styled.span<{ $color: string }>`
+  display: flex;
+  align-items: center;
+  color: ${(p) => p.$color};
 `;
 
 /* ── Helpers ── */
@@ -320,7 +332,12 @@ function VariantPreview({ v }: { v: ShellVariant }) {
 
 /* ── Component ── */
 
-const demoPages = ["Inference Hub", "Small Modal", "Big Modal", "Create Database"];
+const demoPages = [
+  { label: "Inference Hub", href: "/inference" },
+  { label: "Small Modal", href: "/modal-small" },
+  { label: "Big Modal", href: "/modal-large" },
+  { label: "Create Database", href: "/create-database" },
+];
 
 const MainContent: React.FC<MainContentProps> = ({
   variant,
@@ -339,7 +356,7 @@ const MainContent: React.FC<MainContentProps> = ({
       $gap={dims.gap}
     >
       {/* Shell Variants */}
-      <div>
+      <Section>
         <SectionHeading $color={dims.textPrimary}>Shell Variants</SectionHeading>
         <CardGrid>
           {(Object.keys(shellVariants) as ShellVariant[]).map((v) => {
@@ -363,7 +380,7 @@ const MainContent: React.FC<MainContentProps> = ({
             );
           })}
         </CardGrid>
-      </div>
+      </Section>
 
       {/* Color Mode */}
       <Section>
@@ -425,18 +442,21 @@ const MainContent: React.FC<MainContentProps> = ({
       {/* Demo Pages */}
       <Section>
         <SectionHeading $color={dims.textPrimary}>Demo Pages</SectionHeading>
-        <PillList>
+        <CardGrid>
           {demoPages.map((page) => (
-            <Pill
-              key={page}
+            <DemoTile
+              key={page.label}
+              href={page.href}
               $border={dims.borderLight}
               $color={dims.textSecondary}
               $accent={dims.accent}
+              $surface={dims.surfaceBg}
             >
-              {page}
-            </Pill>
+              <DemoTileLabel $color={dims.textPrimary}>{page.label}</DemoTileLabel>
+              <DemoTileArrow $color={dims.textMuted}>{icons.chevronRight}</DemoTileArrow>
+            </DemoTile>
           ))}
-        </PillList>
+        </CardGrid>
       </Section>
     </Wrapper>
   );

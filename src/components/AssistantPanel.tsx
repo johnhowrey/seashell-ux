@@ -23,10 +23,11 @@ interface DimProps {
 /* ------------------------------------------------------------------ */
 
 const Wrapper = styled.div<PanelProps>`
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
   width: 440px;
-  min-width: 440px;
-  height: 100%;
   z-index: 20;
   display: flex;
   flex-direction: column;
