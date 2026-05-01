@@ -24,138 +24,145 @@ export interface ShellDims {
   createHover: string;
 }
 
+// Variant defines LAYOUT only — sizes, radius, gap, plus two flags that
+// describe how the chrome relates to the canvas. Color belongs to ColorMode.
+export interface ShellLayout {
+  sidebarCollapsed: number;
+  sidebarOpen: number;
+  headerHeight: number;
+  borderRadius: number;
+  gap: number;
+  // Chrome floats on a contrasting canvas (Floating).
+  detached: boolean;
+  // Header uses the accent color as its background (Zen).
+  headerStyle: "surface" | "accent";
+}
+
 export const shellVariants: Record<
   ShellVariant,
-  { name: string; description: string; dims: ShellDims }
+  { name: string; description: string; layout: ShellLayout }
 > = {
   standard: {
     name: "Standard",
     description:
       "The production-ready flat UI shell with precise, functional chrome.",
-    dims: {
+    layout: {
       sidebarCollapsed: 52,
       sidebarOpen: 206,
       headerHeight: 52,
       borderRadius: 0,
       gap: 0,
-      headerBg: "#ffffff",
-      sidebarBg: "#ffffff",
-      contentBg: "#ffffff",
-      surfaceBg: "#ffffff",
-      borderLight: "#e0e0e0",
-      textPrimary: "#1a1a1a",
-      textSecondary: "#555555",
-      textMuted: "#999999",
-      accent: "#0f62fe",
-      accentHover: "#0050d8",
-      createBg: "#00879b",
-      createHover: "#00707f",
+      detached: false,
+      headerStyle: "surface",
     },
   },
   floating: {
     name: "Floating",
     description:
-      "Detached panels on a dark canvas. Rounded, modern, Linear-inspired.",
-    dims: {
+      "Detached panels on a contrasting canvas. Rounded, modern, Linear-inspired.",
+    layout: {
       sidebarCollapsed: 52,
       sidebarOpen: 206,
       headerHeight: 52,
       borderRadius: 12,
       gap: 8,
-      headerBg: "#1e1e24",
-      sidebarBg: "#1e1e24",
-      contentBg: "#0e0e14",
-      surfaceBg: "#1e1e24",
-      borderLight: "#2a2a32",
-      textPrimary: "#e8e8ec",
-      textSecondary: "#a0a0a8",
-      textMuted: "#666670",
-      accent: "#6366f1",
-      accentHover: "#5558e6",
-      createBg: "#00879b",
-      createHover: "#00707f",
+      detached: true,
+      headerStyle: "surface",
     },
   },
   compact: {
     name: "Compact",
     description:
       "Maximum density. Same flat aesthetic, tighter spacing, smaller chrome.",
-    dims: {
+    layout: {
       sidebarCollapsed: 40,
       sidebarOpen: 180,
       headerHeight: 34,
       borderRadius: 0,
       gap: 0,
-      headerBg: "#ffffff",
-      sidebarBg: "#ffffff",
-      contentBg: "#ffffff",
-      surfaceBg: "#ffffff",
-      borderLight: "#e0e0e0",
-      textPrimary: "#1a1a1a",
-      textSecondary: "#555555",
-      textMuted: "#999999",
-      accent: "#0f62fe",
-      accentHover: "#0050d8",
-      createBg: "#00879b",
-      createHover: "#00707f",
+      detached: false,
+      headerStyle: "surface",
     },
   },
   zen: {
     name: "Zen",
     description:
       "Calm, spacious. Branded header bar, full-width content. Nav and chat push, never cover.",
-    dims: {
+    layout: {
       sidebarCollapsed: 52,
       sidebarOpen: 240,
       headerHeight: 52,
       borderRadius: 0,
       gap: 0,
-      headerBg: "#0f62fe",
-      sidebarBg: "#ffffff",
-      contentBg: "#ffffff",
-      surfaceBg: "#f4f5f6",
-      borderLight: "#e0e0e0",
-      textPrimary: "#1a1a1a",
-      textSecondary: "#555555",
-      textMuted: "#999999",
-      accent: "#0f62fe",
-      accentHover: "#0050d8",
-      createBg: "#00879b",
-      createHover: "#00707f",
+      detached: false,
+      headerStyle: "accent",
     },
   },
 };
 
-export const colorModes: Record<
-  ColorMode,
-  { name: string; description: string; accent: string; bg: string; surface: string; text: string; border: string }
-> = {
+// ColorPalette is the complete set of colors used by the shell. Every value
+// here applies in every variant — variants only change layout/sizing/flags.
+export interface ColorPalette {
+  name: string;
+  description: string;
+  bg: string;            // page background when not detached
+  canvas: string;        // contrasting backdrop when detached (Floating)
+  surface: string;       // panels, cards, sidebar, header
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  border: string;
+  accent: string;
+  accentHover: string;
+  createBg: string;
+  createHover: string;
+}
+
+export const colorModes: Record<ColorMode, ColorPalette> = {
   digitalocean: {
     name: "DigitalOcean",
-    description: "Blue branding, teal accents. The signature DO look.",
-    accent: "#0f62fe",
+    description: "Pure white canvas, signature DO blue. The flagship look.",
     bg: "#ffffff",
+    canvas: "#eef0f3",
     surface: "#ffffff",
     text: "#1a1a1a",
+    textSecondary: "#555555",
+    textMuted: "#999999",
     border: "#e0e0e0",
+    accent: "#0f62fe",
+    accentHover: "#0050d8",
+    createBg: "#00879b",
+    createHover: "#00707f",
   },
   light: {
     name: "Light",
-    description: "Steel blue accents, airy and professional.",
-    accent: "#4a6fa5",
-    bg: "#f8f9fb",
+    description: "Cool slate canvas, steel-blue accents. Airy and editorial.",
+    bg: "#f4f6f9",
+    canvas: "#e6e9ef",
     surface: "#ffffff",
-    text: "#1a1a1a",
-    border: "#dde3ea",
+    text: "#1a1f2e",
+    textSecondary: "#4a5468",
+    textMuted: "#8a93a6",
+    border: "#d9dee6",
+    accent: "#4a6fa5",
+    accentHover: "#3a5b8c",
+    createBg: "#00879b",
+    createHover: "#00707f",
   },
   dark: {
     name: "Dark",
-    description: "Easy on the eyes. Deep surfaces, soft contrast.",
-    accent: "#7c3aed",
+    description: "Deep surfaces, violet accents. Easy on the eyes.",
     bg: "#1a1a1e",
+    canvas: "#0e0e14",
     surface: "#242428",
     text: "#e8e8ec",
+    textSecondary: "#b8b8c0",
+    textMuted: "#80808c",
     border: "#333338",
+    accent: "#7c3aed",
+    accentHover: "#6d28d9",
+    createBg: "#00879b",
+    createHover: "#00707f",
   },
 };
 
@@ -163,34 +170,32 @@ export function getMergedDims(
   variant: ShellVariant,
   colorMode: ColorMode
 ): ShellDims {
-  const base = shellVariants[variant].dims;
+  const layout = shellVariants[variant].layout;
   const cm = colorModes[colorMode];
 
-  // Floating gets a darker neutral canvas regardless of color mode.
-  const floatingCanvas = "#0e0e14";
-  const isFloating = variant === "floating";
-  const isDarkSurface = colorMode === "dark";
-
-  const surface = isFloating
-    ? colorMode === "dark"
-      ? "#1e1e24"
-      : "#1e1e24"
-    : cm.surface;
-  const contentBg = isFloating ? floatingCanvas : cm.bg;
+  // Layout decides whether the page sits on bg (flush) or canvas (detached).
+  const contentBg = layout.detached ? cm.canvas : cm.bg;
+  // Header style decides whether the header bar is surface or accent.
+  const headerBg = layout.headerStyle === "accent" ? cm.accent : cm.surface;
 
   return {
-    ...base,
+    sidebarCollapsed: layout.sidebarCollapsed,
+    sidebarOpen: layout.sidebarOpen,
+    headerHeight: layout.headerHeight,
+    borderRadius: layout.borderRadius,
+    gap: layout.gap,
     contentBg,
-    surfaceBg: surface,
-    sidebarBg: surface,
-    headerBg: variant === "zen" ? cm.accent : surface,
-    borderLight: isFloating ? "#2a2a32" : cm.border,
-    textPrimary: isFloating ? "#e8e8ec" : cm.text,
-    textSecondary:
-      isFloating || isDarkSurface ? "#a0a0a8" : "#555555",
-    textMuted: isFloating || isDarkSurface ? "#666670" : "#999999",
+    surfaceBg: cm.surface,
+    sidebarBg: cm.surface,
+    headerBg,
+    borderLight: cm.border,
+    textPrimary: cm.text,
+    textSecondary: cm.textSecondary,
+    textMuted: cm.textMuted,
     accent: cm.accent,
-    accentHover: base.accentHover,
+    accentHover: cm.accentHover,
+    createBg: cm.createBg,
+    createHover: cm.createHover,
   };
 }
 

@@ -379,12 +379,9 @@ const BetaPill = styled.span<{ $accent: string }>`
 
 /* ─── Helpers ─── */
 
-const PreviewBg: Record<ShellVariant, string> = {
-  standard: "#f5f5f5",
-  floating: "#1a1a2e",
-  compact: "#fafafa",
-  zen: "#fafafa",
-};
+// Per-variant outer wrapper — same neutral in all color modes; the variant
+// preview communicates layout, not color (color comes from the palette card).
+const PreviewBg = "#f0f1f3";
 
 const A11yIcon = (
   <svg
@@ -429,20 +426,19 @@ interface VariantPreviewProps {
 }
 
 function VariantPreviewArt({ v }: VariantPreviewProps) {
-  const d = shellVariants[v].dims;
-  const bg = PreviewBg[v];
+  // Variant preview shows LAYOUT only — same neutral palette across variants.
+  // Color differentiation lives in the Color Mode section below.
   const isFloating = v === "floating";
   const isZen = v === "zen";
 
-  // Mini-shell colors
-  const shellBg = isFloating ? "#0e0e14" : "#e3e3e3";
-  const sidebarBg = isFloating ? "#1e1e24" : "#ffffff";
-  const mainBg = isFloating ? "#0e0e14" : "#ffffff";
-  const headerBg = isZen ? d.accent : isFloating ? "#1e1e24" : "#f5f5f5";
-  const cardBg = isFloating ? "#1e1e24" : "#f0f0f0";
+  const shellBg = isFloating ? "#d8dbe3" : "#e3e3e3";
+  const sidebarBg = "#ffffff";
+  const mainBg = "#ffffff";
+  const headerBg = isZen ? "#0f62fe" : "#f5f5f5";
+  const cardBg = "#f0f0f0";
 
   return (
-    <VariantPreview $bg={bg}>
+    <VariantPreview $bg={PreviewBg}>
       <MiniShell $variant={v} $bg={shellBg}>
         {!isZen && <MiniSidebar $bg={sidebarBg} $variant={v} />}
         <MiniMain $bg={mainBg} $variant={v}>
@@ -467,19 +463,22 @@ function ColorPreviewArt({ m }: ColorPreviewProps) {
   const cm = colorModes[m];
   const isDark = m === "dark";
 
-  // Distinct outer canvas color so the mini-shell card stands out.
-  const wrapperBg = isDark ? "#0a0a12" : m === "light" ? "#cfd4dc" : "#cdd5e2";
-  const sidebarBg = isDark ? "#242428" : "#ffffff";
-  const mainBg = cm.bg;
-  const headerBg = isDark ? "#2c2c34" : "#eef0f3";
-  const cardBg = isDark ? "#34343c" : "#e9ecf0";
-  const shellBorder = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)";
+  // Outer wrapper sits one shade off the palette canvas so the mini-shell
+  // (in surface) reads as a distinct card.
+  const wrapperBg = isDark ? "#08080c" : cm.canvas;
+  // Inside the shell we want to show all three meaningful tones: surface,
+  // a divider/header tone, and a card tone. Derive them from the palette
+  // so a future palette change automatically flows through.
+  const sidebarBg = cm.surface;
+  const headerBg = cm.canvas;
+  const cardBg = isDark ? "#34343c" : "#eef0f4";
+  const shellBorder = isDark ? "rgba(255,255,255,0.08)" : cm.border;
 
   return (
     <VariantPreview $bg={wrapperBg}>
       <MiniShell
         $variant="standard"
-        $bg={mainBg}
+        $bg={cm.surface}
         style={{
           border: `1px solid ${shellBorder}`,
           boxShadow: isDark
@@ -496,7 +495,7 @@ function ColorPreviewArt({ m }: ColorPreviewProps) {
             }}
           />
         </MiniSidebar>
-        <MiniMain $bg={mainBg} $variant="standard">
+        <MiniMain $bg={cm.surface} $variant="standard">
           <MiniHeader $bg={headerBg} />
           <MiniContent>
             <MiniCard $bg={cardBg} />
