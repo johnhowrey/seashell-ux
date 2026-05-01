@@ -708,7 +708,7 @@ const CapIconRender: Record<string, React.ReactNode> = {
 /* ─── Page ─── */
 export default function PlaygroundPage() {
   const [variant] = useState<ShellVariant>("standard");
-  const [colorMode] = useState<ColorMode>("digitalocean");
+  const [colorMode] = useState<ColorMode>("light");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [tab, setTab] = useState<"playground" | "quickstart">("playground");

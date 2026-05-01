@@ -57,7 +57,7 @@ interface PageFrameProps {
 export default function PageFrame({
   breadcrumbs,
   variant = "standard",
-  colorMode = "digitalocean",
+  colorMode = "light",
   children,
 }: PageFrameProps) {
   const [assistantOpen, setAssistantOpen] = useState(false);

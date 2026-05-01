@@ -949,7 +949,7 @@ const regions = [
 /* ─── Page ─── */
 export default function CreateDatabasePage() {
   const [variant] = useState<ShellVariant>("standard");
-  const [colorMode] = useState<ColorMode>("digitalocean");
+  const [colorMode] = useState<ColorMode>("light");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 

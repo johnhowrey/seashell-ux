@@ -352,6 +352,73 @@ const FocusMoreList = styled.ul<{ $color: string; $border: string }>`
   }
 `;
 
+const ItemList = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 18px;
+`;
+
+const ItemRow = styled.div<{ $border: string }>`
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid ${(p) => p.$border};
+  &:last-child { border-bottom: none; }
+`;
+
+const ItemChip = styled.span<{ $bg: string; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  text-align: center;
+  white-space: nowrap;
+`;
+
+const ItemText = styled.div`
+  min-width: 0;
+`;
+
+const ItemTitle = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: ${(p) => p.$color};
+  margin-bottom: 3px;
+`;
+
+const ItemEvidence = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: ${(p) => p.$color};
+`;
+
+const ItemVerbBtn = styled.button<{ $accent: string }>`
+  padding: 8px 18px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: 1px solid ${(p) => p.$accent};
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { filter: brightness(0.95); }
+`;
+
 const ProjectDetails = styled.details<{ $color: string }>`
   margin-top: 8px;
   font-family: var(--font-inter), "Inter", sans-serif;
@@ -851,51 +918,78 @@ export default function ProjectHomePage() {
             <>
               <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
                 <FocusLead $color={dims.textPrimary}>
-                  Production is serving traffic. The most important thing
-                  on your plate is{" "}
-                  <strong>
-                    copilot-db-prod will run out of disk in ~12 days
-                  </strong>{" "}
-                  at the current write rate.
+                  Production is serving traffic.{" "}
+                  <strong>3 things to handle.</strong> Two are mechanical and
+                  the agent can run them.
                 </FocusLead>
                 <FocusActions>
                   <FocusPrimaryBtn $accent={dims.accent} type="button">
-                    Resize the volume
+                    Run the maintenance batch (resize + patch)
                   </FocusPrimaryBtn>
                   <FocusGhostBtn
                     $color={dims.textPrimary}
                     $border={dims.borderLight}
                     type="button"
                   >
-                    Set a capacity alert instead
+                    Schedule for off-peak tonight
                   </FocusGhostBtn>
                 </FocusActions>
-                <FocusMore $color={dims.textMuted}>
-                  <summary>2 more things worth a look</summary>
-                  <FocusMoreList
-                    $color={dims.textSecondary}
-                    $border={dims.borderLight}
-                  >
-                    <li>
-                      <strong>web-prod-2 has a pending security patch.</strong>{" "}
-                      ubuntu-jammy 22.04 → 22.04.5 covers CVE-2026-1812.{" "}
-                      <a style={{ color: dims.accent, cursor: "pointer" }}>
-                        Apply during off-peak
-                      </a>
-                    </li>
-                    <li>
-                      <strong>
-                        Earlier deploy failure has no RCA on file.
-                      </strong>{" "}
-                      v2.4.0 health check timed out at 15:42 before v2.4.1
-                      recovered.{" "}
-                      <a style={{ color: dims.accent, cursor: "pointer" }}>
-                        Open RCA template
-                      </a>
-                    </li>
-                  </FocusMoreList>
-                </FocusMore>
               </FocusBlock>
+
+              <ItemList $surface={dims.surfaceBg} $border={dims.borderLight}>
+                <ItemRow $border={dims.borderLight}>
+                  <ItemChip $bg="#fef3c7" $color="#92400e">
+                    12 days
+                  </ItemChip>
+                  <ItemText>
+                    <ItemTitle $color={dims.textPrimary}>
+                      copilot-db-prod is at 87% disk
+                    </ItemTitle>
+                    <ItemEvidence $color={dims.textSecondary}>
+                      Storage will fill in ~12 days at the current 0.6 GB/day
+                      write rate.
+                    </ItemEvidence>
+                  </ItemText>
+                  <ItemVerbBtn type="button" $accent={dims.accent}>
+                    Resize
+                  </ItemVerbBtn>
+                </ItemRow>
+
+                <ItemRow $border={dims.borderLight}>
+                  <ItemChip $bg="#fee2e2" $color="#991b1b">
+                    CVE
+                  </ItemChip>
+                  <ItemText>
+                    <ItemTitle $color={dims.textPrimary}>
+                      web-prod-2 has a pending security patch
+                    </ItemTitle>
+                    <ItemEvidence $color={dims.textSecondary}>
+                      ubuntu-jammy 22.04 → 22.04.5 covers CVE-2026-1812.
+                    </ItemEvidence>
+                  </ItemText>
+                  <ItemVerbBtn type="button" $accent={dims.accent}>
+                    Apply
+                  </ItemVerbBtn>
+                </ItemRow>
+
+                <ItemRow $border={dims.borderLight}>
+                  <ItemChip $bg="#dbeafe" $color="#1e40af">
+                    No RCA
+                  </ItemChip>
+                  <ItemText>
+                    <ItemTitle $color={dims.textPrimary}>
+                      Earlier deploy failure has no RCA on file
+                    </ItemTitle>
+                    <ItemEvidence $color={dims.textSecondary}>
+                      v2.4.0 health check timed out at 15:42 before v2.4.1
+                      recovered.
+                    </ItemEvidence>
+                  </ItemText>
+                  <ItemVerbBtn type="button" $accent={dims.accent}>
+                    Open
+                  </ItemVerbBtn>
+                </ItemRow>
+              </ItemList>
 
               <ProjectDetails $color={dims.textMuted}>
                 <summary>Project details — environments, resources, deploys, team</summary>

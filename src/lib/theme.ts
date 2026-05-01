@@ -1,5 +1,5 @@
 export type ShellVariant = "standard" | "floating" | "compact" | "zen";
-export type ColorMode = "digitalocean" | "light" | "dark";
+export type ColorMode = "light" | "dark";
 
 export const PRODUCT_NAME = "DigitalOcean";
 export const PRODUCT_LABEL = "DigitalOcean Control Panel";
@@ -119,9 +119,9 @@ export interface ColorPalette {
 }
 
 export const colorModes: Record<ColorMode, ColorPalette> = {
-  digitalocean: {
-    name: "DigitalOcean",
-    description: "Pure white canvas, signature DO blue. The flagship look.",
+  light: {
+    name: "Light",
+    description: "Pure white canvas, signature blue accents. The default look.",
     bg: "#ffffff",
     canvas: "#eef0f3",
     surface: "#ffffff",
@@ -131,21 +131,6 @@ export const colorModes: Record<ColorMode, ColorPalette> = {
     border: "#e0e0e0",
     accent: "#0f62fe",
     accentHover: "#0050d8",
-    createBg: "#00879b",
-    createHover: "#00707f",
-  },
-  light: {
-    name: "Light",
-    description: "Cool slate canvas, steel-blue accents. Airy and editorial.",
-    bg: "#f4f6f9",
-    canvas: "#e6e9ef",
-    surface: "#ffffff",
-    text: "#1a1f2e",
-    textSecondary: "#4a5468",
-    textMuted: "#8a93a6",
-    border: "#d9dee6",
-    accent: "#4a6fa5",
-    accentHover: "#3a5b8c",
     createBg: "#00879b",
     createHover: "#00707f",
   },

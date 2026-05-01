@@ -228,7 +228,7 @@ const BackLink = styled.div`
 
 export default function ModalLargePage() {
   const [variant, setVariant] = useState<ShellVariant>("standard");
-  const [colorMode, setColorMode] = useState<ColorMode>("digitalocean");
+  const [colorMode, setColorMode] = useState<ColorMode>("light");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
   const [a11yOpen, setA11yOpen] = useState(false);

@@ -204,7 +204,100 @@ const FocusActions = styled.div`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const FocusPrimaryBtn = styled.button<{ $accent: string }>`
+  padding: 9px 16px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: 1px solid ${(p) => p.$accent};
+  border-radius: 7px;
+  cursor: pointer;
+  &:hover { filter: brightness(0.95); }
+`;
+
+const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
+  padding: 9px 14px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  background: transparent;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 7px;
+  cursor: pointer;
+`;
+
+const ItemList = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 18px;
+`;
+
+const ItemRow = styled.div<{ $border: string }>`
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
   gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid ${(p) => p.$border};
+  &:last-child { border-bottom: none; }
+`;
+
+const ItemChip = styled.span<{ $bg: string; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  text-align: center;
+  white-space: nowrap;
+`;
+
+const ItemText = styled.div`
+  min-width: 0;
+`;
+
+const ItemTitle = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: ${(p) => p.$color};
+  margin-bottom: 3px;
+`;
+
+const ItemEvidence = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: ${(p) => p.$color};
+`;
+
+const ItemVerbLink = styled(Link)<{ $accent: string }>`
+  padding: 8px 16px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: 1px solid ${(p) => p.$accent};
+  border-radius: 7px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  &:hover { filter: brightness(0.95); }
 `;
 
 const FocusMore = styled.details<{ $color: string }>`
@@ -527,66 +620,93 @@ export default function WorkspaceHomePage() {
 
           <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
             <FocusLead $color={dims.textPrimary}>
-              Today, the highest-leverage thing on your plate is{" "}
-              <strong>cutting $18 / month from two idle Droplets</strong>{" "}
-              that have been at 4% CPU for the past 30 days.
+              <strong>4 things on your plate this week.</strong> 3 are routine
+              and the agent can handle them.
             </FocusLead>
             <FocusActions>
-              <Link
-                href="/droplets"
-                style={{
-                  padding: "10px 18px",
-                  fontFamily: "var(--font-inter), Inter, sans-serif",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  color: "#ffffff",
-                  background: dims.accent,
-                  borderRadius: 7,
-                  textDecoration: "none",
-                }}
+              <FocusPrimaryBtn $accent={dims.accent} type="button">
+                Let AI handle the 3 routine ones
+              </FocusPrimaryBtn>
+              <FocusGhostBtn
+                $color={dims.textPrimary}
+                $border={dims.borderLight}
+                type="button"
               >
-                Right-size now
-              </Link>
-              <FocusMore $color={dims.textMuted}>
-                <summary>3 more things worth your time</summary>
-                <FocusMoreList
-                  $color={dims.textSecondary}
-                  $border={dims.borderLight}
-                >
-                  <li>
-                    <strong>4 production Droplets have no backups.</strong>{" "}
-                    Nightly is $1.20/mo each.{" "}
-                    <Link
-                      href="/droplets/web-prod-1"
-                      style={{ color: dims.accent }}
-                    >
-                      Enable
-                    </Link>
-                  </li>
-                  <li>
-                    <strong>llama-3 inference is averaging 320 ms p95.</strong>{" "}
-                    A dedicated SFO3 instance hits 130 ms.{" "}
-                    <Link
-                      href="/playground"
-                      style={{ color: dims.accent }}
-                    >
-                      See plans
-                    </Link>
-                  </li>
-                  <li>
-                    <strong>Jane Park has 3 PRs blocked on review.</strong>{" "}
-                    She isn&rsquo;t on the team yet.{" "}
-                    <Link
-                      href="/onboarding"
-                      style={{ color: dims.accent }}
-                    >
-                      Send invite
-                    </Link>
-                  </li>
-                </FocusMoreList>
-              </FocusMore>
+                Snooze them all for the week
+              </FocusGhostBtn>
             </FocusActions>
           </FocusBlock>
+
+          <ItemList $surface={dims.surfaceBg} $border={dims.borderLight}>
+            <ItemRow $border={dims.borderLight}>
+              <ItemChip $bg="#dcfce7" $color="#166534">
+                $18 / mo
+              </ItemChip>
+              <ItemText>
+                <ItemTitle $color={dims.textPrimary}>
+                  Right-size 2 idle Droplets
+                </ItemTitle>
+                <ItemEvidence $color={dims.textSecondary}>
+                  web-dev-1 + web-dev-2 averaged 4% CPU over the last 30 days.
+                </ItemEvidence>
+              </ItemText>
+              <ItemVerbLink href="/droplets" $accent={dims.accent}>
+                Right-size
+              </ItemVerbLink>
+            </ItemRow>
+
+            <ItemRow $border={dims.borderLight}>
+              <ItemChip $bg="#fee2e2" $color="#991b1b">
+                Risk
+              </ItemChip>
+              <ItemText>
+                <ItemTitle $color={dims.textPrimary}>
+                  Add backups to 4 unprotected Droplets
+                </ItemTitle>
+                <ItemEvidence $color={dims.textSecondary}>
+                  main-postgres, web-prod-1/2, api-server. Nightly is $1.20 / mo each.
+                </ItemEvidence>
+              </ItemText>
+              <ItemVerbLink href="/droplets/web-prod-1" $accent={dims.accent}>
+                Enable
+              </ItemVerbLink>
+            </ItemRow>
+
+            <ItemRow $border={dims.borderLight}>
+              <ItemChip $bg="#ede9fe" $color="#5b21b6">
+                60% faster
+              </ItemChip>
+              <ItemText>
+                <ItemTitle $color={dims.textPrimary}>
+                  Move llama-3-endpoint off serverless
+                </ItemTitle>
+                <ItemEvidence $color={dims.textSecondary}>
+                  320 ms p95 today. A dedicated SFO3 instance hits 130 ms.
+                </ItemEvidence>
+              </ItemText>
+              <ItemVerbLink href="/playground" $accent={dims.accent}>
+                See plans
+              </ItemVerbLink>
+            </ItemRow>
+
+            <ItemRow $border={dims.borderLight}>
+              <ItemChip $bg="#dbeafe" $color="#1e40af">
+                Unblock 3 PRs
+              </ItemChip>
+              <ItemText>
+                <ItemTitle $color={dims.textPrimary}>
+                  Add Jane Park to Acme Corp
+                </ItemTitle>
+                <ItemEvidence $color={dims.textSecondary}>
+                  Requested as reviewer on 3 PRs in roadtrip-copilot since
+                  Tuesday.
+                </ItemEvidence>
+              </ItemText>
+              <ItemVerbLink href="/onboarding" $accent={dims.accent}>
+                Invite
+              </ItemVerbLink>
+            </ItemRow>
+          </ItemList>
 
           <SnapshotDetails $color={dims.textMuted}>
             <summary>Today&rsquo;s snapshot — KPIs, recent activity, spend, getting started</summary>

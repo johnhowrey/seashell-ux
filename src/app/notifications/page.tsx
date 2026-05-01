@@ -766,6 +766,130 @@ const handledSummary = [
   "Filed creation notice for staging-environment",
 ];
 
+const FocusBlock = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin: 4px 0 14px;
+`;
+
+const FocusLead = styled.p<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: ${(p) => p.$color};
+  margin: 0 0 14px;
+
+  strong { font-weight: 700; }
+`;
+
+const FocusActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const FocusPrimaryBtn = styled.button<{ $accent: string }>`
+  padding: 9px 16px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: 1px solid ${(p) => p.$accent};
+  border-radius: 7px;
+  cursor: pointer;
+  &:hover { filter: brightness(0.95); }
+`;
+
+const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
+  padding: 9px 14px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  background: transparent;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 7px;
+  cursor: pointer;
+`;
+
+const ItemList = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 12px;
+  overflow: hidden;
+`;
+
+const ItemRow = styled.div<{ $border: string }>`
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid ${(p) => p.$border};
+  &:last-child { border-bottom: none; }
+`;
+
+const ItemVerb = styled.button<{ $accent: string }>`
+  padding: 8px 0;
+  width: 92px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: 1px solid ${(p) => p.$accent};
+  border-radius: 7px;
+  cursor: pointer;
+  text-align: center;
+  &:hover { filter: brightness(0.95); }
+`;
+
+const ItemText = styled.div`
+  min-width: 0;
+`;
+
+const ItemHeading = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: ${(p) => p.$color};
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 3px;
+`;
+
+const ItemKindPill = styled.span<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: ${(p) => p.$color};
+  flex-shrink: 0;
+`;
+
+const ItemEvidence = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: ${(p) => p.$color};
+`;
+
+const ItemSnooze = styled.button<{ $color: string }>`
+  background: none;
+  border: none;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12px;
+  color: ${(p) => p.$color};
+  cursor: pointer;
+  padding: 4px 8px;
+  &:hover { text-decoration: underline; }
+`;
+
 const QueueCard = styled.div<{ $surface: string; $border: string }>`
   background: ${(p) => p.$surface};
   border: 1px solid ${(p) => p.$border};
@@ -925,111 +1049,138 @@ interface InboxQueueProps {
   isDark: boolean;
 }
 
-const InboxQueue: React.FC<InboxQueueProps> = ({ dims, isDark }) => {
-  const [index, setIndex] = useState(0);
-  const total = queueItems.length;
+const InboxQueue: React.FC<InboxQueueProps> = ({ dims }) => {
+  const [resolved, setResolved] = useState<Set<number>>(new Set());
   const handledCount = handledSummary.length;
-  const advance = () => setIndex((i) => Math.min(total, i + 1));
+  const total = queueItems.length;
+  const aiIndices = queueItems
+    .map((q, i) => ({ q, i }))
+    .filter((x) => x.q.kind === "ai")
+    .map((x) => x.i);
+  const remainingAi = aiIndices.filter((i) => !resolved.has(i));
+  const remaining = queueItems
+    .map((_, i) => i)
+    .filter((i) => !resolved.has(i));
 
-  if (index === 0) {
+  const resolveOne = (i: number) =>
+    setResolved((s) => {
+      const ns = new Set(s);
+      ns.add(i);
+      return ns;
+    });
+  const resolveMany = (idxs: number[]) =>
+    setResolved((s) => {
+      const ns = new Set(s);
+      idxs.forEach((i) => ns.add(i));
+      return ns;
+    });
+
+  if (remaining.length === 0) {
     return (
-      <>
-        <InboxLeadH $color={dims.textPrimary}>
-          Your AI Agent already cleared {handledCount} of{" "}
-          {handledCount + total}.
-        </InboxLeadH>
-        <InboxLead $color={dims.textSecondary}>
-          {total}{" "}
-          need a yes from you, then you&rsquo;re done — about 30 seconds each.
-        </InboxLead>
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: 24,
-          }}
-        >
-          <PrimaryBtn $accent={dims.accent} onClick={() => setIndex(1)}>
-            Start clearing →
-          </PrimaryBtn>
-        </div>
-        <HandledSection $color={dims.textMuted}>
-          <summary>What the agent already handled</summary>
-          <HandledList
-            $color={dims.textSecondary}
-            $border={dims.borderLight}
-          >
-            {handledSummary.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </HandledList>
-        </HandledSection>
-      </>
+      <FocusBlock
+        $surface={dims.surfaceBg}
+        $border={dims.borderLight}
+      >
+        <FocusLead $color={dims.textPrimary}>
+          Inbox zero. Your AI Agent handled the rest.
+        </FocusLead>
+      </FocusBlock>
     );
   }
 
-  if (index > total) {
-    return (
-      <>
-        <InboxLeadH $color={dims.textPrimary}>
-          Inbox zero. Nice work.
-        </InboxLeadH>
-        <InboxLead $color={dims.textSecondary}>
-          Everything that was waiting on you is resolved. We&rsquo;ll let you
-          know when something new comes in.
-        </InboxLead>
-        <div style={{ textAlign: "center", marginTop: 24 }}>
-          <SecondaryBtn
-            $color={dims.textPrimary}
-            $border={dims.borderLight}
-            onClick={() => setIndex(0)}
-          >
-            Back to inbox
-          </SecondaryBtn>
-        </div>
-      </>
-    );
-  }
-
-  const item = queueItems[index - 1];
   return (
-    <QueueCard $surface={dims.surfaceBg} $border={dims.borderLight}>
-      <QueueProgress $color={dims.textMuted}>
-        Item {index} of {total}
-      </QueueProgress>
-      <QueueCategory $color={item.categoryColor}>
-        {item.category}
-      </QueueCategory>
-      <QueueTitle $color={dims.textPrimary}>{item.title}</QueueTitle>
-      <QueueEvidence $color={dims.textSecondary}>
-        {item.evidence}
-      </QueueEvidence>
-      <QueueActions>
-        <PrimaryBtn $accent={dims.accent} onClick={advance}>
-          {item.primary}
-        </PrimaryBtn>
-        {item.secondary.map((s) => (
-          <SecondaryBtn
-            key={s}
+    <>
+      <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
+        <FocusLead $color={dims.textPrimary}>
+          Your AI Agent already handled <strong>{handledCount}</strong>.{" "}
+          <strong>
+            {remaining.length} need{remaining.length === 1 ? "s" : ""} you.
+          </strong>{" "}
+          Quick clear:
+        </FocusLead>
+        <FocusActions>
+          {remainingAi.length > 0 && (
+            <FocusPrimaryBtn
+              $accent={dims.accent}
+              type="button"
+              onClick={() => resolveMany(remainingAi)}
+            >
+              Approve {remainingAi.length === 1 ? "the AI suggestion" : `all ${remainingAi.length} AI suggestions`}
+            </FocusPrimaryBtn>
+          )}
+          <FocusGhostBtn
             $color={dims.textPrimary}
             $border={dims.borderLight}
-            onClick={advance}
+            type="button"
+            onClick={() => resolveMany(remaining)}
           >
-            {s}
-          </SecondaryBtn>
-        ))}
-      </QueueActions>
-      <QueueHelpHint $color={dims.textMuted}>
-        {item.helpHint.split(" · ").map((part, i, arr) => (
-          <React.Fragment key={part}>
-            <a>{part}</a>
-            {i < arr.length - 1 ? "  ·  " : ""}
-          </React.Fragment>
-        ))}
-        {!isDark ? "" : ""}
-      </QueueHelpHint>
-    </QueueCard>
+            Snooze them all for the week
+          </FocusGhostBtn>
+        </FocusActions>
+      </FocusBlock>
+
+      <ItemList $surface={dims.surfaceBg} $border={dims.borderLight}>
+        {queueItems.map((item, i) => {
+          const isResolved = resolved.has(i);
+          if (isResolved) return null;
+          return (
+            <ItemRow key={i} $border={dims.borderLight}>
+              <ItemVerb
+                $accent={dims.accent}
+                onClick={() => resolveOne(i)}
+                type="button"
+                title={item.primary}
+              >
+                {primaryVerb(item.primary)}
+              </ItemVerb>
+              <ItemText>
+                <ItemHeading $color={dims.textPrimary}>
+                  <ItemKindPill $color={item.categoryColor}>
+                    {item.category.split(" · ")[0]}
+                  </ItemKindPill>
+                  {item.title}
+                </ItemHeading>
+                <ItemEvidence $color={dims.textSecondary}>
+                  {item.evidence}
+                </ItemEvidence>
+              </ItemText>
+              <ItemSnooze
+                $color={dims.textMuted}
+                onClick={() => resolveOne(i)}
+                type="button"
+                aria-label="Snooze"
+              >
+                Snooze
+              </ItemSnooze>
+            </ItemRow>
+          );
+        })}
+      </ItemList>
+
+      <HandledSection $color={dims.textMuted}>
+        <summary>
+          Show what the agent already handled ({handledCount})
+        </summary>
+        <HandledList $color={dims.textSecondary} $border={dims.borderLight}>
+          {handledSummary.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </HandledList>
+      </HandledSection>
+    </>
   );
 };
+
+// Distill the verbose `primary` field into a single-word verb for the
+// inline button. Falls back to the first word otherwise.
+function primaryVerb(primary: string): string {
+  const lower = primary.toLowerCase();
+  if (lower.startsWith("yes")) return "Approve";
+  if (lower.startsWith("block")) return "Block";
+  if (lower.startsWith("pay")) return "Pay";
+  if (lower.startsWith("open")) return "Open";
+  return primary.split(" ")[0];
+}
 
 export default function NotificationsCenterPage() {
   const [tab, setTab] = useState<"inbox" | "preferences">("inbox");
