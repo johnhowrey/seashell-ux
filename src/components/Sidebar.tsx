@@ -248,7 +248,7 @@ export default function Sidebar({
     <Wrap $variant={variant} $dims={dims} $hidden={hidden}>
       <LogoBlock
         $headerHeight={dims.headerHeight}
-        onClick={() => navigate("/home")}
+        onClick={() => navigate("/")}
         style={{ cursor: "pointer" }}
         title="Home"
       >
