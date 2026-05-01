@@ -221,6 +221,22 @@ const FocusMore = styled.details<{ $color: string }>`
   summary::-webkit-details-marker { display: none; }
 `;
 
+const SnapshotDetails = styled.details<{ $color: string }>`
+  margin-top: 18px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 10px 14px;
+    color: inherit;
+    text-decoration: underline;
+  }
+  summary::-webkit-details-marker { display: none; }
+`;
+
 const FocusMoreList = styled.ul<{ $color: string; $border: string }>`
   list-style: none;
   margin: 12px 0 0;
@@ -507,10 +523,73 @@ export default function WorkspaceHomePage() {
             <GreetH1 $color={dims.textPrimary}>
               Good morning, John 👋
             </GreetH1>
-            <GreetSub $color={dims.textSecondary}>
-              Here&rsquo;s what&rsquo;s happening across your workspaces today.
-            </GreetSub>
           </Greeting>
+
+          <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
+            <FocusLead $color={dims.textPrimary}>
+              Today, the highest-leverage thing on your plate is{" "}
+              <strong>cutting $18 / month from two idle Droplets</strong>{" "}
+              that have been at 4% CPU for the past 30 days.
+            </FocusLead>
+            <FocusActions>
+              <Link
+                href="/droplets"
+                style={{
+                  padding: "10px 18px",
+                  fontFamily: "var(--font-inter), Inter, sans-serif",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  color: "#ffffff",
+                  background: dims.accent,
+                  borderRadius: 7,
+                  textDecoration: "none",
+                }}
+              >
+                Right-size now
+              </Link>
+              <FocusMore $color={dims.textMuted}>
+                <summary>3 more things worth your time</summary>
+                <FocusMoreList
+                  $color={dims.textSecondary}
+                  $border={dims.borderLight}
+                >
+                  <li>
+                    <strong>4 production Droplets have no backups.</strong>{" "}
+                    Nightly is $1.20/mo each.{" "}
+                    <Link
+                      href="/droplets/web-prod-1"
+                      style={{ color: dims.accent }}
+                    >
+                      Enable
+                    </Link>
+                  </li>
+                  <li>
+                    <strong>llama-3 inference is averaging 320 ms p95.</strong>{" "}
+                    A dedicated SFO3 instance hits 130 ms.{" "}
+                    <Link
+                      href="/playground"
+                      style={{ color: dims.accent }}
+                    >
+                      See plans
+                    </Link>
+                  </li>
+                  <li>
+                    <strong>Jane Park has 3 PRs blocked on review.</strong>{" "}
+                    She isn&rsquo;t on the team yet.{" "}
+                    <Link
+                      href="/onboarding"
+                      style={{ color: dims.accent }}
+                    >
+                      Send invite
+                    </Link>
+                  </li>
+                </FocusMoreList>
+              </FocusMore>
+            </FocusActions>
+          </FocusBlock>
+
+          <SnapshotDetails $color={dims.textMuted}>
+            <summary>Today&rsquo;s snapshot — KPIs, recent activity, spend, getting started</summary>
 
           <KpiGrid>
             <KpiTile
@@ -581,70 +660,6 @@ export default function WorkspaceHomePage() {
                   </ActivityRow>
                 ))}
               </Section>
-
-              <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
-                <FocusLead $color={dims.textPrimary}>
-                  Today, the highest-leverage thing on your plate is{" "}
-                  <strong>cutting $18 / month from two idle Droplets</strong>{" "}
-                  that have been at 4% CPU for the past 30 days.
-                </FocusLead>
-                <FocusActions>
-                  <Link
-                    href="/droplets"
-                    style={{
-                      padding: "10px 18px",
-                      fontFamily:
-                        "var(--font-inter), Inter, sans-serif",
-                      fontWeight: 600,
-                      fontSize: 13,
-                      color: "#ffffff",
-                      background: dims.accent,
-                      borderRadius: 7,
-                      textDecoration: "none",
-                    }}
-                  >
-                    Right-size now
-                  </Link>
-                  <FocusMore $color={dims.textMuted}>
-                    <summary>3 more things worth your time</summary>
-                    <FocusMoreList
-                      $color={dims.textSecondary}
-                      $border={dims.borderLight}
-                    >
-                      <li>
-                        <strong>4 production Droplets have no backups.</strong>{" "}
-                        Nightly is $1.20/mo each.{" "}
-                        <Link
-                          href="/droplets/web-prod-1"
-                          style={{ color: dims.accent }}
-                        >
-                          Enable
-                        </Link>
-                      </li>
-                      <li>
-                        <strong>llama-3 inference is averaging 320 ms p95.</strong>{" "}
-                        A dedicated SFO3 instance hits 130 ms.{" "}
-                        <Link
-                          href="/playground"
-                          style={{ color: dims.accent }}
-                        >
-                          See plans
-                        </Link>
-                      </li>
-                      <li>
-                        <strong>Jane Park has 3 PRs blocked on review.</strong>{" "}
-                        She isn&rsquo;t on the team yet.{" "}
-                        <Link
-                          href="/onboarding"
-                          style={{ color: dims.accent }}
-                        >
-                          Send invite
-                        </Link>
-                      </li>
-                    </FocusMoreList>
-                  </FocusMore>
-                </FocusActions>
-              </FocusBlock>
 
               <Section $surface={dims.surfaceBg} $border={dims.borderLight}>
                 <SectionHead>
@@ -746,6 +761,7 @@ export default function WorkspaceHomePage() {
               </Section>
             </div>
           </Cols>
+          </SnapshotDetails>
         </Page>
       )}
     </PageFrame>

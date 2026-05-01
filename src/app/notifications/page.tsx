@@ -936,10 +936,11 @@ const InboxQueue: React.FC<InboxQueueProps> = ({ dims, isDark }) => {
       <>
         <InboxLeadH $color={dims.textPrimary}>
           Your AI Agent already cleared {handledCount} of{" "}
-          {handledCount + total}. {total} need a yes from you, then you&rsquo;re done.
+          {handledCount + total}.
         </InboxLeadH>
         <InboxLead $color={dims.textSecondary}>
-          We&rsquo;ll walk through them one at a time. Each takes about 30 seconds.
+          {total} need a yes from you, then you&rsquo;re done — about 30
+          seconds each.
         </InboxLead>
         <div
           style={{
