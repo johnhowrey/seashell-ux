@@ -569,7 +569,7 @@ const AssistantButton = styled.button<HasDims & { $active: boolean }>`
   gap: 6px;
   height: 100%;
   padding: 0 16px;
-  width: auto;
+  width: ${({ $active }) => ($active ? "440px" : "auto")};
   overflow: hidden;
   border: none;
   color: #ffffff;
@@ -586,18 +586,12 @@ const AssistantButton = styled.button<HasDims & { $active: boolean }>`
     rgb(0, 105, 255) 48.05%,
     rgb(198, 174, 255) 96.08%
   );
-  transition: filter 0.15s ease;
+  transition: width 0.22s cubic-bezier(0.2, 0, 0, 1), filter 0.15s ease;
+  flex-shrink: 0;
 
   &:hover {
     filter: brightness(1.06);
   }
-
-  ${({ $active }) =>
-    $active &&
-    css`
-      filter: brightness(1.1);
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
-    `}
 `;
 
 const KeyHint = styled.span`
@@ -685,6 +679,8 @@ function Header({
   const [searchValue, setSearchValue] = useState("");
   const [searchWrapWidth, setSearchWrapWidth] = useState(360);
   const [openCrumb, setOpenCrumb] = useState<number | null>(null);
+  const [crumbWidth, setCrumbWidth] = useState(800);
+  const [ellipsisOpen, setEllipsisOpen] = useState(false);
 
   useEffect(() => {
     const mac =
@@ -709,6 +705,20 @@ function Header({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onToggleAssistant]);
+
+  // Watch breadcrumb wrap width to trigger collapsed (… ellipsis) state
+  // when space is tight (e.g. when both side panels are open).
+  useEffect(() => {
+    if (!crumbAnchorRef.current) return;
+    const obs = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width ?? 800;
+      setCrumbWidth(w);
+    });
+    obs.observe(crumbAnchorRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  useOutsideClose(ellipsisOpen, () => setEllipsisOpen(false), [crumbAnchorRef]);
 
   // Track Create button anchor rect for fixed-position panel.
   useEffect(() => {
@@ -786,9 +796,87 @@ function Header({
 
   const isZen = variant === "zen";
 
+  // Decide which segments to show. When the trail is narrow, collapse
+  // middle segments into a "…" button that opens a popover listing them.
+  const segmentsToRender = (() => {
+    if (breadcrumbs.length <= 2 || crumbWidth >= 320) {
+      return breadcrumbs.map((label, i) => ({
+        kind: "segment" as const,
+        label,
+        index: i,
+      }));
+    }
+    if (crumbWidth >= 200) {
+      // Show first + … + last
+      return [
+        { kind: "segment" as const, label: breadcrumbs[0], index: 0 },
+        { kind: "ellipsis" as const, hidden: breadcrumbs.slice(1, -1) },
+        {
+          kind: "segment" as const,
+          label: breadcrumbs[breadcrumbs.length - 1],
+          index: breadcrumbs.length - 1,
+        },
+      ];
+    }
+    // Very narrow: show only the active (last) segment
+    return [
+      { kind: "ellipsis" as const, hidden: breadcrumbs.slice(0, -1) },
+      {
+        kind: "segment" as const,
+        label: breadcrumbs[breadcrumbs.length - 1],
+        index: breadcrumbs.length - 1,
+      },
+    ];
+  })();
+
+  const ellipsisItems =
+    segmentsToRender.find((s) => s.kind === "ellipsis")?.hidden ?? [];
+
   const renderBreadcrumb = () => (
     <CrumbTrail ref={crumbAnchorRef}>
-      {breadcrumbs.map((part, i) => {
+      {segmentsToRender.map((entry, idx) => {
+        if (entry.kind === "ellipsis") {
+          const isLastEntry = idx === segmentsToRender.length - 1;
+          return (
+            <CrumbGroup key={`ellipsis-${idx}`}>
+              <Segment
+                $variant={variant}
+                $dims={dims}
+                $active={false}
+                $expanded={ellipsisOpen}
+                type="button"
+                title="More"
+                onClick={() => setEllipsisOpen((o) => !o)}
+                aria-haspopup="menu"
+                aria-expanded={ellipsisOpen || undefined}
+                style={{ maxWidth: "none" }}
+              >
+                …
+              </Segment>
+              {!isLastEntry && (
+                <Separator $variant={variant} $dims={dims} aria-hidden>
+                  /
+                </Separator>
+              )}
+              {ellipsisOpen && entry.hidden.length > 0 && (
+                <BluePopover role="menu">
+                  <BlueSectionHead>HIDDEN BREADCRUMBS</BlueSectionHead>
+                  {entry.hidden.map((label) => (
+                    <BlueItem
+                      key={label}
+                      type="button"
+                      onClick={() => setEllipsisOpen(false)}
+                    >
+                      <BlueItemLabel>{label}</BlueItemLabel>
+                    </BlueItem>
+                  ))}
+                </BluePopover>
+              )}
+            </CrumbGroup>
+          );
+        }
+        const i = entry.index;
+        const part = entry.label;
         const isLast = i === breadcrumbs.length - 1;
         const popover = breadcrumbPopovers[part];
         const expanded = openCrumb === i;
