@@ -133,6 +133,241 @@ const HeroButton = styled.button<{ $primary?: boolean; $accent: string; $border:
   }
 `;
 
+/* ─── Status line (lives inside the hero) ─── */
+const StatusLine = styled.div<{ $color: string; $border: string }>`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 12px;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 8px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: ${(p) => p.$color};
+`;
+
+const StatusGlyph = styled.span<{ $bg: string; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+`;
+
+const StatusBody = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const StatusHead = styled.div<{ $color: string }>`
+  font-weight: 600;
+  color: ${(p) => p.$color};
+  margin-bottom: 2px;
+`;
+
+/* ─── Attention card ─── */
+const AttentionCard = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 14px;
+  padding: 6px 0;
+  margin-bottom: 20px;
+`;
+
+const AttentionHead = styled.div<{ $color: string; $border: string }>`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid ${(p) => p.$border};
+  color: ${(p) => p.$color};
+`;
+
+const AttentionTitle = styled.h2<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+  color: ${(p) => p.$color};
+`;
+
+const AttentionMeta = styled.span<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12px;
+  color: ${(p) => p.$color};
+`;
+
+const AttentionItem = styled.div<{ $border: string }>`
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid ${(p) => p.$border};
+  &:last-child { border-bottom: none; }
+`;
+
+const AttentionGlyph = styled.span<{ $bg: string; $color: string }>`
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+`;
+
+const AttentionBody = styled.div`
+  min-width: 0;
+`;
+
+const AttentionLine1 = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  margin-bottom: 2px;
+`;
+
+const AttentionLine2 = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: ${(p) => p.$color};
+`;
+
+const AttentionActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+`;
+
+const AttentionBtn = styled.button<{ $primary?: boolean; $accent: string; $border: string; $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  ${(p) =>
+    p.$primary
+      ? `background: ${p.$accent}; color: #ffffff; border: 1px solid ${p.$accent};`
+      : `background: transparent; color: ${p.$color}; border: 1px solid ${p.$border};`}
+`;
+
+/* ─── Focus block (action-first hero) ─── */
+const FocusBlock = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 18px;
+`;
+
+const FocusLead = styled.p<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: ${(p) => p.$color};
+  margin: 0 0 18px;
+
+  strong { font-weight: 700; }
+`;
+
+const FocusActions = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+`;
+
+const FocusPrimaryBtn = styled.button<{ $accent: string }>`
+  padding: 10px 18px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: 1px solid ${(p) => p.$accent};
+  border-radius: 7px;
+  cursor: pointer;
+  &:hover { filter: brightness(0.95); }
+`;
+
+const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
+  padding: 10px 16px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  background: transparent;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 7px;
+  cursor: pointer;
+`;
+
+const FocusMore = styled.details<{ $color: string }>`
+  margin-top: 16px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    color: inherit;
+    text-decoration: underline;
+  }
+  summary::-webkit-details-marker { display: none; }
+`;
+
+const FocusMoreList = styled.ul<{ $color: string; $border: string }>`
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 14px 16px;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 10px;
+  color: ${(p) => p.$color};
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+
+  li {
+    display: list-item;
+  }
+`;
+
+const ProjectDetails = styled.details<{ $color: string }>`
+  margin-top: 8px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 10px 14px;
+    color: inherit;
+    text-decoration: underline;
+  }
+  summary::-webkit-details-marker { display: none; }
+`;
+
 /* ─── Tabs ─── */
 const TabRow = styled.div<{ $border: string }>`
   display: flex;
@@ -497,6 +732,51 @@ const team = [
   { name: "Devon Wu", role: "Reviewer", bg: "#ef4444" },
 ];
 
+// Live attention items — each is a specific signal from this project's
+// state, tied to a one-click resolution. Severity drives color/glyph.
+type AttentionSeverity = "warn" | "risk" | "info";
+interface AttentionEntry {
+  severity: AttentionSeverity;
+  title: string;
+  evidence: string;
+  actions: { label: string; primary?: boolean }[];
+}
+
+const attentionItems: AttentionEntry[] = [
+  {
+    severity: "warn",
+    title: "copilot-db-prod is at 87% disk capacity",
+    evidence:
+      "Storage will fill in ~12 days at the current 0.6 GB/day write rate. Resize before Mar 8 to avoid a hard cutover.",
+    actions: [
+      { label: "Resize volume", primary: true },
+      { label: "Set capacity alert" },
+      { label: "View metrics" },
+    ],
+  },
+  {
+    severity: "risk",
+    title: "web-prod-2 has a pending security patch",
+    evidence:
+      "ubuntu-jammy 22.04 → 22.04.5 covers CVE-2026-1812 (kernel privilege escalation). 4 droplets unpatched.",
+    actions: [
+      { label: "Apply now", primary: true },
+      { label: "Schedule for off-peak" },
+      { label: "Review CVE" },
+    ],
+  },
+  {
+    severity: "info",
+    title: "Production deploy failed earlier today, then recovered",
+    evidence:
+      "v2.4.0 → v2.4.1 health check timed out at 15:42 UTC. The retry at 16:08 succeeded. No RCA on file yet.",
+    actions: [
+      { label: "Open RCA template", primary: true },
+      { label: "View failure log" },
+    ],
+  },
+];
+
 const integrations = [
   { name: "GitHub", desc: "Auto-deploy from main", connected: true, icon: "⌥" },
   { name: "Slack", desc: "Alerts to #ops", connected: true, icon: "#" },
@@ -518,8 +798,8 @@ export default function ProjectHomePage() {
             <ProjectInfo>
               <NameRow>
                 <ProjectName $color={dims.textPrimary}>roadtrip-copilot</ProjectName>
-                <StatusPill $bg="#dcfce7" $color="#166534">
-                  Healthy
+                <StatusPill $bg="#fef3c7" $color="#92400e">
+                  3 to review
                 </StatusPill>
                 <StatusPill
                   $bg={isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9"}
@@ -532,28 +812,6 @@ export default function ProjectHomePage() {
                 AI-assisted travel planning. Suggests routes, lodging, and
                 attractions based on group preferences and budget.
               </ProjectDesc>
-              <MetaRow>
-                <MetaItem $color={dims.textMuted}>
-                  <strong style={{ color: dims.textSecondary }}>6</strong> resources
-                </MetaItem>
-                <MetaSep>·</MetaSep>
-                <MetaItem $color={dims.textMuted}>
-                  <strong style={{ color: dims.textSecondary }}>$567.50/mo</strong> spend
-                </MetaItem>
-                <MetaSep>·</MetaSep>
-                <MetaItem $color={dims.textMuted}>
-                  <strong style={{ color: dims.textSecondary }}>5</strong> members
-                </MetaItem>
-                <MetaSep>·</MetaSep>
-                <MetaItem $color={dims.textMuted}>
-                  Created May 4, 2025
-                </MetaItem>
-                <MetaSep>·</MetaSep>
-                <MetaItem $color={dims.textMuted}>
-                  Last deploy{" "}
-                  <strong style={{ color: "#10b981" }}>8m ago</strong>
-                </MetaItem>
-              </MetaRow>
             </ProjectInfo>
             <HeroActions>
               <HeroButton
@@ -590,6 +848,58 @@ export default function ProjectHomePage() {
           </TabRow>
 
           {tab === "Overview" && (
+            <>
+              <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
+                <FocusLead $color={dims.textPrimary}>
+                  Production is serving traffic. The most important thing
+                  on your plate is{" "}
+                  <strong>
+                    copilot-db-prod will run out of disk in ~12 days
+                  </strong>{" "}
+                  at the current write rate.
+                </FocusLead>
+                <FocusActions>
+                  <FocusPrimaryBtn $accent={dims.accent} type="button">
+                    Resize the volume
+                  </FocusPrimaryBtn>
+                  <FocusGhostBtn
+                    $color={dims.textPrimary}
+                    $border={dims.borderLight}
+                    type="button"
+                  >
+                    Set a capacity alert instead
+                  </FocusGhostBtn>
+                </FocusActions>
+                <FocusMore $color={dims.textMuted}>
+                  <summary>2 more things worth a look</summary>
+                  <FocusMoreList
+                    $color={dims.textSecondary}
+                    $border={dims.borderLight}
+                  >
+                    <li>
+                      <strong>web-prod-2 has a pending security patch.</strong>{" "}
+                      ubuntu-jammy 22.04 → 22.04.5 covers CVE-2026-1812.{" "}
+                      <a style={{ color: dims.accent, cursor: "pointer" }}>
+                        Apply during off-peak
+                      </a>
+                    </li>
+                    <li>
+                      <strong>
+                        Earlier deploy failure has no RCA on file.
+                      </strong>{" "}
+                      v2.4.0 health check timed out at 15:42 before v2.4.1
+                      recovered.{" "}
+                      <a style={{ color: dims.accent, cursor: "pointer" }}>
+                        Open RCA template
+                      </a>
+                    </li>
+                  </FocusMoreList>
+                </FocusMore>
+              </FocusBlock>
+
+              <ProjectDetails $color={dims.textMuted}>
+                <summary>Project details — environments, resources, deploys, team</summary>
+
             <Cols>
               <div>
                 <Card $surface={dims.surfaceBg} $border={dims.borderLight}>
@@ -793,6 +1103,8 @@ export default function ProjectHomePage() {
                 </Card>
               </div>
             </Cols>
+              </ProjectDetails>
+            </>
           )}
 
           {tab !== "Overview" && (

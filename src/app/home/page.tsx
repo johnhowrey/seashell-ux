@@ -180,6 +180,65 @@ const SuggestGrid = styled.div`
   gap: 12px;
 `;
 
+const FocusBlock = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 14px;
+  padding: 24px 26px;
+`;
+
+const FocusLead = styled.p<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: ${(p) => p.$color};
+  margin: 0 0 18px;
+
+  strong {
+    font-weight: 700;
+  }
+`;
+
+const FocusActions = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+`;
+
+const FocusMore = styled.details<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    color: inherit;
+    text-decoration: underline;
+  }
+  summary::-webkit-details-marker { display: none; }
+`;
+
+const FocusMoreList = styled.ul<{ $color: string; $border: string }>`
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 14px 16px;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 10px;
+  color: ${(p) => p.$color};
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+
+  li {
+    display: list-item;
+  }
+`;
+
 const SuggestCard = styled(Link)<{ $surface: string; $border: string; $accent: string }>`
   display: block;
   padding: 14px 16px;
@@ -196,6 +255,14 @@ const SuggestCard = styled(Link)<{ $surface: string; $border: string; $accent: s
   }
 `;
 
+const SuggestHead = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+`;
+
 const SuggestIcon = styled.span<{ $bg: string; $color: string }>`
   display: inline-flex;
   align-items: center;
@@ -206,7 +273,19 @@ const SuggestIcon = styled.span<{ $bg: string; $color: string }>`
   background: ${(p) => p.$bg};
   color: ${(p) => p.$color};
   font-size: 16px;
-  margin-bottom: 10px;
+  flex-shrink: 0;
+`;
+
+const SuggestChip = styled.span<{ $bg: string; $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
 `;
 
 const SuggestTitle = styled.div<{ $color: string }>`
@@ -214,14 +293,23 @@ const SuggestTitle = styled.div<{ $color: string }>`
   font-weight: 600;
   font-size: 13px;
   color: ${(p) => p.$color};
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  line-height: 1.35;
 `;
 
 const SuggestSub = styled.div<{ $color: string }>`
   font-family: var(--font-inter), "Inter", sans-serif;
   font-size: 12px;
   color: ${(p) => p.$color};
-  line-height: 1.45;
+  line-height: 1.5;
+  margin-bottom: 10px;
+`;
+
+const SuggestCta = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: ${(p) => p.$color};
 `;
 
 const Checklist = styled.ol`
@@ -347,38 +435,49 @@ const activity: { dot: string; label: string; meta: string; color: string }[] = 
   { dot: "#0ea5e9", label: "Database vacuum completed for copilot-db-prod", meta: "Yesterday at 2:08am", color: "#0ea5e9" },
 ];
 
+// Each recommendation must answer "why is this on MY screen?" with a
+// specific evidence statement tied to this workspace's state. Outcome
+// (the result) leads the title; evidence is the sub-line.
 const suggestions = [
   {
     href: "/droplets",
+    chip: { label: "Save $18 / mo", bg: "#dcfce7", color: "#166534" },
     icon: "○",
     iconBg: "#dbeafe",
     iconColor: "#1e40af",
-    title: "Manage Droplets",
-    sub: "12 running across 3 regions. View health and resize plans.",
+    title: "Right-size 2 idle Droplets",
+    sub: "web-dev-1 and web-dev-2 averaged 4% CPU over the last 30 days. Dropping to s-1vcpu-1gb covers the load.",
+    cta: "Review droplets →",
   },
   {
-    href: "/database/create",
-    icon: "▤",
+    href: "/droplets/web-prod-1",
+    chip: { label: "Data at risk", bg: "#fee2e2", color: "#991b1b" },
+    icon: "⛌",
     iconBg: "#fef3c7",
     iconColor: "#a16207",
-    title: "Add a managed database",
-    sub: "Spin up Postgres, MongoDB, MySQL, or Redis in minutes.",
+    title: "Add backups to 4 unprotected Droplets",
+    sub: "main-postgres, web-prod-1, web-prod-2, and api-server have no snapshot policy. Nightly is $1.20 / mo each.",
+    cta: "Enable backups →",
   },
   {
     href: "/playground",
+    chip: { label: "60% faster", bg: "#ede9fe", color: "#5b21b6" },
     icon: "✦",
     iconBg: "#ede9fe",
     iconColor: "#6d28d9",
-    title: "Try the AI playground",
-    sub: "Compare 5 inference models. Deploy the winner with one click.",
+    title: "Move llama-3-endpoint off serverless",
+    sub: "Your inference is averaging 320 ms p95. A dedicated SFO3 instance has been hitting 130 ms for similar traffic shapes.",
+    cta: "See dedicated plans →",
   },
   {
     href: "/onboarding",
+    chip: { label: "Unblock 3 PRs", bg: "#dbeafe", color: "#1e40af" },
     icon: "→",
     iconBg: "#dcfce7",
     iconColor: "#15803d",
-    title: "Invite your team",
-    sub: "Add teammates and assign roles to ship faster.",
+    title: "Add Jane Park to Acme Corp",
+    sub: "She's been requested as reviewer on 3 PRs in roadtrip-copilot but isn't on the team yet — invites are pending since Tuesday.",
+    cta: "Send invite →",
   },
 ];
 
@@ -483,34 +582,69 @@ export default function WorkspaceHomePage() {
                 ))}
               </Section>
 
-              <Section $surface={dims.surfaceBg} $border={dims.borderLight}>
-                <SectionHead>
-                  <SectionTitle $color={dims.textPrimary}>
-                    Suggested next actions
-                  </SectionTitle>
-                </SectionHead>
-                <SuggestGrid>
-                  {suggestions.map((s) => (
-                    <SuggestCard
-                      key={s.title}
-                      href={s.href}
-                      $surface={isDark ? "rgba(255,255,255,0.02)" : "#fbfbfd"}
+              <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
+                <FocusLead $color={dims.textPrimary}>
+                  Today, the highest-leverage thing on your plate is{" "}
+                  <strong>cutting $18 / month from two idle Droplets</strong>{" "}
+                  that have been at 4% CPU for the past 30 days.
+                </FocusLead>
+                <FocusActions>
+                  <Link
+                    href="/droplets"
+                    style={{
+                      padding: "10px 18px",
+                      fontFamily:
+                        "var(--font-inter), Inter, sans-serif",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      color: "#ffffff",
+                      background: dims.accent,
+                      borderRadius: 7,
+                      textDecoration: "none",
+                    }}
+                  >
+                    Right-size now
+                  </Link>
+                  <FocusMore $color={dims.textMuted}>
+                    <summary>3 more things worth your time</summary>
+                    <FocusMoreList
+                      $color={dims.textSecondary}
                       $border={dims.borderLight}
-                      $accent={dims.accent}
                     >
-                      <SuggestIcon $bg={s.iconBg} $color={s.iconColor}>
-                        {s.icon}
-                      </SuggestIcon>
-                      <SuggestTitle $color={dims.textPrimary}>
-                        {s.title}
-                      </SuggestTitle>
-                      <SuggestSub $color={dims.textSecondary}>
-                        {s.sub}
-                      </SuggestSub>
-                    </SuggestCard>
-                  ))}
-                </SuggestGrid>
-              </Section>
+                      <li>
+                        <strong>4 production Droplets have no backups.</strong>{" "}
+                        Nightly is $1.20/mo each.{" "}
+                        <Link
+                          href="/droplets/web-prod-1"
+                          style={{ color: dims.accent }}
+                        >
+                          Enable
+                        </Link>
+                      </li>
+                      <li>
+                        <strong>llama-3 inference is averaging 320 ms p95.</strong>{" "}
+                        A dedicated SFO3 instance hits 130 ms.{" "}
+                        <Link
+                          href="/playground"
+                          style={{ color: dims.accent }}
+                        >
+                          See plans
+                        </Link>
+                      </li>
+                      <li>
+                        <strong>Jane Park has 3 PRs blocked on review.</strong>{" "}
+                        She isn&rsquo;t on the team yet.{" "}
+                        <Link
+                          href="/onboarding"
+                          style={{ color: dims.accent }}
+                        >
+                          Send invite
+                        </Link>
+                      </li>
+                    </FocusMoreList>
+                  </FocusMore>
+                </FocusActions>
+              </FocusBlock>
 
               <Section $surface={dims.surfaceBg} $border={dims.borderLight}>
                 <SectionHead>

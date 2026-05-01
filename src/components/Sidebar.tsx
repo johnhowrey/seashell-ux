@@ -192,29 +192,11 @@ interface SidebarProps {
   notificationsOpen?: boolean;
 }
 
-// Abstract mark — three stacked rounded rectangles forming a stylized
-// shell silhouette. Intentionally non-specific.
+// Plain circle — neutral placeholder mark, no risk of being read as a
+// hamburger menu or other control.
 const DOLogoSVG = (
   <LogoMark viewBox="0 0 24 24" fill="none">
-    <rect x="4" y="4" width="16" height="3" rx="1.5" fill="#ffffff" />
-    <rect
-      x="4"
-      y="10.5"
-      width="13"
-      height="3"
-      rx="1.5"
-      fill="#ffffff"
-      opacity="0.78"
-    />
-    <rect
-      x="4"
-      y="17"
-      width="9"
-      height="3"
-      rx="1.5"
-      fill="#ffffff"
-      opacity="0.55"
-    />
+    <circle cx="12" cy="12" r="8" fill="#ffffff" />
   </LogoMark>
 );
 

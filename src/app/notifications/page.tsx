@@ -106,6 +106,199 @@ const InsightSparkline = styled.svg`
   flex-shrink: 0;
 `;
 
+/* ─── Inbox status ─── */
+const InboxStatus = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+`;
+
+const InboxStatusHead = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+`;
+
+const InboxStatusH1 = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: ${(p) => p.$color};
+`;
+
+const InboxStatusSub = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12px;
+  color: ${(p) => p.$color};
+`;
+
+const InboxBuckets = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+`;
+
+const Bucket = styled.button<{ $bg: string; $border: string }>`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: ${(p) => p.$bg};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 10px;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  &:hover { transform: translateY(-1px); }
+`;
+
+const BucketLabel = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: ${(p) => p.$color};
+`;
+
+const BucketCount = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 22px;
+  color: ${(p) => p.$color};
+`;
+
+const BucketHint = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12px;
+  color: ${(p) => p.$color};
+`;
+
+/* ─── Filter controls (popover) ─── */
+const ControlsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+`;
+
+const FilterTrigger = styled.button<{ $color: string; $border: string; $bg: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  background: ${(p) => p.$bg};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover { filter: brightness(0.97); }
+`;
+
+const FilterPill = styled.span<{ $accent: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: ${(p) => p.$accent}1c;
+  color: ${(p) => p.$accent};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+
+  button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+  }
+`;
+
+const PopWrap = styled.div`
+  position: relative;
+`;
+
+const Popover = styled.div<{ $surface: string; $border: string }>`
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: 280px;
+  padding: 12px;
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 10px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+`;
+
+const PopGroupLabel = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: ${(p) => p.$color};
+  margin: 8px 4px 6px;
+  &:first-child { margin-top: 0; }
+`;
+
+/* ─── Resolution path ─── */
+const ResolutionLine = styled.div<{ $bg: string; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+`;
+
+const ResolutionPathRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+`;
+
+const PathBtn = styled.button<{
+  $primary?: boolean;
+  $color: string;
+  $border: string;
+  $accent: string;
+}>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  ${(p) =>
+    p.$primary
+      ? `background: ${p.$accent}; color: #ffffff; border: 1px solid ${p.$accent};`
+      : `background: transparent; color: ${p.$color}; border: 1px solid ${p.$border};`}
+`;
+
 /* ─── Tabs ─── */
 const TabRow = styled.div<{ $border: string }>`
   display: flex;
@@ -498,8 +691,347 @@ const ruleCategories = [
   { id: "team", label: "Team", color: "#0ea5e9" },
 ];
 
+/* ─── Focused queue ──────────────────────────────────────────────────
+   The inbox is not a list. It is a small set of items waiting on the
+   user. Everything the AI Agent already handled is summarized in one
+   sentence and tucked behind a disclosure. Each remaining item appears
+   one at a time. After the last one resolves, we say so and stop.
+─────────────────────────────────────────────────────────────────────*/
+
+type QueueKind = "ai" | "self";
+interface QueueItem {
+  kind: QueueKind;
+  category: string; // pill text
+  categoryColor: string;
+  title: string;
+  evidence: string;
+  primary: string;
+  secondary: string[];
+  helpHint: string; // shown small under the buttons
+}
+
+const queueItems: QueueItem[] = [
+  {
+    kind: "ai",
+    category: "AI Agent · waiting on you",
+    categoryColor: "#6d28d9",
+    title: "Apply the cost optimization?",
+    evidence:
+      "I want to retire web-dev-1 and web-dev-2 (4% avg CPU last 30 days) and right-size worker-prod-1. Saves $18 / month, takes about 90 seconds.",
+    primary: "Yes, apply now",
+    secondary: ["Show me what changes", "Skip"],
+    helpHint: "Ask a question · Get help",
+  },
+  {
+    kind: "ai",
+    category: "AI Agent · waiting on you",
+    categoryColor: "#6d28d9",
+    title: "Block the IP that tried to brute-force you?",
+    evidence:
+      "192.168.14.22 (São Paulo) hit /login 47 times in 2 minutes. I can add a firewall rule across all production droplets.",
+    primary: "Block it",
+    secondary: ["Review the activity first", "Skip"],
+    helpHint: "Ask a question · Get help",
+  },
+  {
+    kind: "self",
+    category: "Billing · needs you",
+    categoryColor: "#047857",
+    title: "Pay your February invoice",
+    evidence: "$247.83 due Mar 15. Card on file ending in 4242 still works.",
+    primary: "Pay now",
+    secondary: ["Open invoice", "Snooze 3 days"],
+    helpHint: "Ask a question",
+  },
+  {
+    kind: "self",
+    category: "Team · needs you",
+    categoryColor: "#1d4ed8",
+    title: "Set Alex Chen's role",
+    evidence:
+      "Alex joined Platform Engineering yesterday with default Developer access. Promote, restrict, or leave as-is.",
+    primary: "Open team settings",
+    secondary: ["Leave as Developer", "Snooze"],
+    helpHint: "Ask a question",
+  },
+];
+
+const handledSummary = [
+  "Auto-scaled copilot-app-nyc1 from 3 → 5 nodes",
+  "Scheduled vacuum on copilot-db-prod (34% fragmentation)",
+  "Cleared the CPU alert on copilot-droplet-01",
+  "Upgraded prod-k8s-cluster v1.29 → v1.30",
+  "Configured nightly backups for 3 new volumes",
+  "Applied $50 promotional credit to your account",
+  "Filed creation notice for staging-environment",
+];
+
+const QueueCard = styled.div<{ $surface: string; $border: string }>`
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 14px;
+  padding: 28px 32px;
+  max-width: 640px;
+  margin: 12px auto 24px;
+`;
+
+const QueueProgress = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: ${(p) => p.$color};
+  margin-bottom: 14px;
+`;
+
+const QueueCategory = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: ${(p) => p.$color};
+  margin-bottom: 8px;
+`;
+
+const QueueTitle = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.3;
+  color: ${(p) => p.$color};
+  margin-bottom: 10px;
+`;
+
+const QueueEvidence = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: ${(p) => p.$color};
+  margin-bottom: 22px;
+`;
+
+const QueueActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+`;
+
+const PrimaryBtn = styled.button<{ $accent: string }>`
+  padding: 10px 18px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: 1px solid ${(p) => p.$accent};
+  border-radius: 7px;
+  cursor: pointer;
+  &:hover { filter: brightness(0.95); }
+`;
+
+const SecondaryBtn = styled.button<{ $color: string; $border: string }>`
+  padding: 10px 16px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  background: transparent;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 7px;
+  cursor: pointer;
+`;
+
+const QueueHelpHint = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12px;
+  color: ${(p) => p.$color};
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+`;
+
+const InboxLead = styled.p<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: ${(p) => p.$color};
+  max-width: 640px;
+  margin: 4px auto 4px;
+  text-align: center;
+`;
+
+const InboxLeadH = styled.h2<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.25;
+  color: ${(p) => p.$color};
+  max-width: 640px;
+  margin: 32px auto 14px;
+  text-align: center;
+`;
+
+const HandledSection = styled.details<{ $color: string }>`
+  max-width: 640px;
+  margin: 20px auto 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+
+  summary {
+    cursor: pointer;
+    list-style: none;
+    text-align: center;
+    padding: 8px;
+    color: inherit;
+    text-decoration: underline;
+  }
+  summary::-webkit-details-marker { display: none; }
+`;
+
+const HandledList = styled.ul<{ $color: string; $border: string }>`
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 12px 16px;
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 10px;
+  color: ${(p) => p.$color};
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    line-height: 1.45;
+  }
+  li::before {
+    content: "✓";
+    color: #15803d;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+`;
+
+import type { ShellDims } from "@/lib/theme";
+
+interface InboxQueueProps {
+  dims: ShellDims;
+  isDark: boolean;
+}
+
+const InboxQueue: React.FC<InboxQueueProps> = ({ dims, isDark }) => {
+  const [index, setIndex] = useState(0);
+  const total = queueItems.length;
+  const handledCount = handledSummary.length;
+  const advance = () => setIndex((i) => Math.min(total, i + 1));
+
+  if (index === 0) {
+    return (
+      <>
+        <InboxLeadH $color={dims.textPrimary}>
+          Your AI Agent already cleared {handledCount} of{" "}
+          {handledCount + total}. {total} need a yes from you, then you&rsquo;re done.
+        </InboxLeadH>
+        <InboxLead $color={dims.textSecondary}>
+          We&rsquo;ll walk through them one at a time. Each takes about 30 seconds.
+        </InboxLead>
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: 24,
+          }}
+        >
+          <PrimaryBtn $accent={dims.accent} onClick={() => setIndex(1)}>
+            Start clearing →
+          </PrimaryBtn>
+        </div>
+        <HandledSection $color={dims.textMuted}>
+          <summary>What the agent already handled</summary>
+          <HandledList
+            $color={dims.textSecondary}
+            $border={dims.borderLight}
+          >
+            {handledSummary.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </HandledList>
+        </HandledSection>
+      </>
+    );
+  }
+
+  if (index > total) {
+    return (
+      <>
+        <InboxLeadH $color={dims.textPrimary}>
+          Inbox zero. Nice work.
+        </InboxLeadH>
+        <InboxLead $color={dims.textSecondary}>
+          Everything that was waiting on you is resolved. We&rsquo;ll let you
+          know when something new comes in.
+        </InboxLead>
+        <div style={{ textAlign: "center", marginTop: 24 }}>
+          <SecondaryBtn
+            $color={dims.textPrimary}
+            $border={dims.borderLight}
+            onClick={() => setIndex(0)}
+          >
+            Back to inbox
+          </SecondaryBtn>
+        </div>
+      </>
+    );
+  }
+
+  const item = queueItems[index - 1];
+  return (
+    <QueueCard $surface={dims.surfaceBg} $border={dims.borderLight}>
+      <QueueProgress $color={dims.textMuted}>
+        Item {index} of {total}
+      </QueueProgress>
+      <QueueCategory $color={item.categoryColor}>
+        {item.category}
+      </QueueCategory>
+      <QueueTitle $color={dims.textPrimary}>{item.title}</QueueTitle>
+      <QueueEvidence $color={dims.textSecondary}>
+        {item.evidence}
+      </QueueEvidence>
+      <QueueActions>
+        <PrimaryBtn $accent={dims.accent} onClick={advance}>
+          {item.primary}
+        </PrimaryBtn>
+        {item.secondary.map((s) => (
+          <SecondaryBtn
+            key={s}
+            $color={dims.textPrimary}
+            $border={dims.borderLight}
+            onClick={advance}
+          >
+            {s}
+          </SecondaryBtn>
+        ))}
+      </QueueActions>
+      <QueueHelpHint $color={dims.textMuted}>
+        {item.helpHint.split(" · ").map((part, i, arr) => (
+          <React.Fragment key={part}>
+            <a>{part}</a>
+            {i < arr.length - 1 ? "  ·  " : ""}
+          </React.Fragment>
+        ))}
+        {!isDark ? "" : ""}
+      </QueueHelpHint>
+    </QueueCard>
+  );
+};
+
 export default function NotificationsCenterPage() {
-  const [tab, setTab] = useState<"inbox" | "all" | "preferences">("inbox");
+  const [tab, setTab] = useState<"inbox" | "preferences">("inbox");
   const [filter, setFilter] = useState<NotifType | "all">("all");
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
@@ -579,241 +1111,33 @@ export default function NotificationsCenterPage() {
         <Page>
           <TopRow>
             <TitleGroup>
-              <PageH1 $color={dims.textPrimary}>Notifications</PageH1>
-              <SubMeta $color={dims.textSecondary}>
-                {unreadCount} unread · {allNotifs.length} total · Last 7 days
-              </SubMeta>
+              <PageH1 $color={dims.textPrimary}>
+                {tab === "preferences" ? "Notification preferences" : "Notifications"}
+              </PageH1>
             </TitleGroup>
             <Actions>
-              <GhostBtn
-                $color={dims.textPrimary}
-                $border={dims.borderLight}
-                onClick={() =>
-                  setReadIds(new Set(allNotifs.map((n) => n.id)))
-                }
-              >
-                Mark all read
-              </GhostBtn>
-              <GhostBtn
-                $color={dims.textPrimary}
-                $border={dims.borderLight}
-                onClick={() => setTab("preferences")}
-              >
-                Preferences
-              </GhostBtn>
+              {tab === "preferences" ? (
+                <GhostBtn
+                  $color={dims.textPrimary}
+                  $border={dims.borderLight}
+                  onClick={() => setTab("inbox")}
+                >
+                  ← Back to inbox
+                </GhostBtn>
+              ) : (
+                <GhostBtn
+                  $color={dims.textPrimary}
+                  $border={dims.borderLight}
+                  onClick={() => setTab("preferences")}
+                >
+                  Preferences
+                </GhostBtn>
+              )}
             </Actions>
           </TopRow>
 
-          <InsightsBanner $accent={dims.accent}>
-            <InsightIcon>📈</InsightIcon>
-            <div>
-              <InsightHeading $color={dims.textPrimary}>
-                Quieter than usual this week.
-              </InsightHeading>
-              <InsightSub $color={dims.textSecondary}>
-                <strong style={{ color: "#15803d" }}>14% fewer alerts</strong>{" "}
-                than last week, and your AI Agent resolved{" "}
-                <strong>7 of 11</strong> automatically.
-              </InsightSub>
-            </div>
-            <InsightSparkline viewBox="0 0 80 28">
-              <path
-                d="M0,12 L8,14 L16,11 L24,16 L32,13 L40,18 L48,15 L56,20 L64,17 L72,22 L80,21"
-                stroke={dims.accent}
-                strokeWidth="1.6"
-                fill="none"
-              />
-              <circle cx="80" cy="21" r="3" fill={dims.accent} />
-            </InsightSparkline>
-          </InsightsBanner>
-
-          <TabRow $border={dims.borderLight}>
-            <Tab
-              $active={tab === "inbox"}
-              $color={dims.textSecondary}
-              $accent={dims.accent}
-              onClick={() => setTab("inbox")}
-              type="button"
-            >
-              Inbox
-              <TabBadge $bg={dims.accent} $color="#ffffff">
-                {unreadCount}
-              </TabBadge>
-            </Tab>
-            <Tab
-              $active={tab === "all"}
-              $color={dims.textSecondary}
-              $accent={dims.accent}
-              onClick={() => setTab("all")}
-              type="button"
-            >
-              All
-            </Tab>
-            <Tab
-              $active={tab === "preferences"}
-              $color={dims.textSecondary}
-              $accent={dims.accent}
-              onClick={() => setTab("preferences")}
-              type="button"
-            >
-              Preferences
-            </Tab>
-          </TabRow>
-
-          {(tab === "inbox" || tab === "all") && (
-            <Layout>
-              <Sidebar>
-                <FilterBlock
-                  $surface={dims.surfaceBg}
-                  $border={dims.borderLight}
-                >
-                  <FilterTitle $color={dims.textMuted}>Categories</FilterTitle>
-                  {categoryFilters.map((cf) => (
-                    <FilterButton
-                      key={cf.id}
-                      $active={filter === cf.id}
-                      $accent={dims.accent}
-                      $color={dims.textPrimary}
-                      onClick={() => setFilter(cf.id)}
-                      type="button"
-                    >
-                      <span style={{ display: "flex", alignItems: "center" }}>
-                        {cf.id !== "all" && (
-                          <FilterDot
-                            $color={
-                              notificationCategoryColors[cf.id as NotifType]
-                                ?.dot || "#94a3b8"
-                            }
-                          />
-                        )}
-                        {cf.label}
-                      </span>
-                      <FilterCount $color={dims.textMuted}>
-                        {counts[cf.id] || 0}
-                      </FilterCount>
-                    </FilterButton>
-                  ))}
-                </FilterBlock>
-
-                <FilterBlock
-                  $surface={dims.surfaceBg}
-                  $border={dims.borderLight}
-                >
-                  <FilterTitle $color={dims.textMuted}>Quick filters</FilterTitle>
-                  <FilterButton
-                    $active={false}
-                    $accent={dims.accent}
-                    $color={dims.textPrimary}
-                    type="button"
-                  >
-                    Action needed
-                    <FilterCount $color={dims.textMuted}>3</FilterCount>
-                  </FilterButton>
-                  <FilterButton
-                    $active={false}
-                    $accent={dims.accent}
-                    $color={dims.textPrimary}
-                    type="button"
-                  >
-                    Snoozed
-                    <FilterCount $color={dims.textMuted}>1</FilterCount>
-                  </FilterButton>
-                  <FilterButton
-                    $active={false}
-                    $accent={dims.accent}
-                    $color={dims.textPrimary}
-                    type="button"
-                  >
-                    Archived
-                    <FilterCount $color={dims.textMuted}>14</FilterCount>
-                  </FilterButton>
-                </FilterBlock>
-              </Sidebar>
-
-              <ListCard $surface={dims.surfaceBg} $border={dims.borderLight}>
-                {Object.keys(grouped).length === 0 && (
-                  <div
-                    style={{
-                      padding: "60px 20px",
-                      textAlign: "center",
-                      fontFamily: "var(--font-inter), Inter, sans-serif",
-                      fontSize: 13,
-                      color: dims.textMuted,
-                    }}
-                  >
-                    {tab === "inbox"
-                      ? "Your inbox is empty. 🎉"
-                      : "No notifications match these filters."}
-                  </div>
-                )}
-                {Object.entries(grouped).map(([gName, items]) => (
-                  <Group key={gName} $border={dims.borderLight}>
-                    <GroupHead $color={dims.textMuted}>{gName}</GroupHead>
-                    {items.map((n) => {
-                      const colors = notificationCategoryColors[n.type];
-                      const unread = !readIds.has(n.id);
-                      return (
-                        <NotifRow
-                          key={n.id}
-                          $border={dims.borderLight}
-                          $unread={unread}
-                          $hover={
-                            isDark ? "rgba(255,255,255,0.03)" : "#f8fafc"
-                          }
-                          onClick={() =>
-                            setReadIds((s) => {
-                              const ns = new Set(s);
-                              ns.add(n.id);
-                              return ns;
-                            })
-                          }
-                        >
-                          <NotifLeft>
-                            <Dot $color={colors.dot} />
-                          </NotifLeft>
-                          <NotifBody>
-                            <NotifMetaRow>
-                              <NotifCategory $color={colors.label}>
-                                {n.categoryLabel}
-                              </NotifCategory>
-                              <NotifTime $color={dims.textMuted}>
-                                {n.time}
-                              </NotifTime>
-                            </NotifMetaRow>
-                            <NotifTitle $color={dims.textPrimary}>
-                              {n.text}
-                            </NotifTitle>
-                            <NotifSub $color={dims.textSecondary}>
-                              {n.meta}
-                            </NotifSub>
-                            <NotifActions>
-                              {n.actions.map((a, ai) => (
-                                <SmallBtn
-                                  key={a.label}
-                                  $primary={ai === 0 || a.primary}
-                                  $color={dims.textPrimary}
-                                  $border={dims.borderLight}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {a.label}
-                                </SmallBtn>
-                              ))}
-                              <SmallBtn
-                                $color={dims.textMuted}
-                                $border={dims.borderLight}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Snooze
-                              </SmallBtn>
-                            </NotifActions>
-                          </NotifBody>
-                        </NotifRow>
-                      );
-                    })}
-                  </Group>
-                ))}
-              </ListCard>
-            </Layout>
+          {tab === "inbox" && (
+            <InboxQueue dims={dims} isDark={isDark} />
           )}
 
           {tab === "preferences" && (
