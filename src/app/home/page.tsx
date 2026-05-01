@@ -180,11 +180,11 @@ const SuggestGrid = styled.div`
   gap: 12px;
 `;
 
+// No border — the focus block just sits in flow with whitespace above
+// and below.  The surface tone is a hair off the page bg so it still
+// reads as a distinct block without a hard outline.
 const FocusBlock = styled.div<{ $surface: string; $border: string }>`
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-radius: 14px;
-  padding: 24px 26px;
+  padding: 4px 0 28px;
 `;
 
 const FocusLead = styled.p<{ $color: string }>`
@@ -232,12 +232,10 @@ const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
   cursor: pointer;
 `;
 
-const ItemList = styled.div<{ $surface: string; $border: string }>`
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 18px;
+// No outer card — rows just stack in flow.  Separation between rows is a
+// single hairline.  No background, no wrapping border, no rounded corners.
+const ItemList = styled.div`
+  margin-bottom: 28px;
 `;
 
 const ItemRow = styled.div<{ $border: string }>`
@@ -245,9 +243,9 @@ const ItemRow = styled.div<{ $border: string }>`
   grid-template-columns: 110px minmax(0, 1fr) auto;
   gap: 16px;
   align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid ${(p) => p.$border};
-  &:last-child { border-bottom: none; }
+  padding: 16px 0;
+  border-top: 1px solid ${(p) => p.$border};
+  &:first-child { border-top: none; padding-top: 8px; }
 `;
 
 const ItemChip = styled.span<{ $bg: string; $color: string }>`
@@ -637,7 +635,7 @@ export default function WorkspaceHomePage() {
             </FocusActions>
           </FocusBlock>
 
-          <ItemList $surface={dims.surfaceBg} $border={dims.borderLight}>
+          <ItemList>
             <ItemRow $border={dims.borderLight}>
               <ItemChip $bg="#dcfce7" $color="#166534">
                 $18 / mo

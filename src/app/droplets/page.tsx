@@ -73,12 +73,10 @@ const GhostBtn = styled.button<{ $color: string; $border: string }>`
 `;
 
 /* ─── Focus block (action-first) ─── */
+// No surrounding box — sits in flow.
 const FocusBlock = styled.div<{ $surface: string; $border: string }>`
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-radius: 14px;
-  padding: 24px 28px;
-  margin-bottom: 16px;
+  padding: 4px 0 24px;
+  margin-bottom: 4px;
 `;
 
 const FocusLead = styled.p<{ $color: string }>`
@@ -152,12 +150,9 @@ const FocusMoreList = styled.ul<{ $color: string; $border: string }>`
   li { display: list-item; }
 `;
 
-const ItemList = styled.div<{ $surface: string; $border: string }>`
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 18px;
+// Rows just stack with hairline dividers; no wrapping card.
+const ItemList = styled.div`
+  margin-bottom: 28px;
 `;
 
 const ItemRow = styled.div<{ $border: string }>`
@@ -165,9 +160,9 @@ const ItemRow = styled.div<{ $border: string }>`
   grid-template-columns: 110px minmax(0, 1fr) auto;
   gap: 16px;
   align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid ${(p) => p.$border};
-  &:last-child { border-bottom: none; }
+  padding: 16px 0;
+  border-top: 1px solid ${(p) => p.$border};
+  &:first-child { border-top: none; padding-top: 8px; }
 `;
 
 const ItemChip = styled.span<{ $bg: string; $color: string }>`
@@ -836,7 +831,7 @@ export default function DropletsListPage() {
             </FocusActions>
           </FocusBlock>
 
-          <ItemList $surface={dims.surfaceBg} $border={dims.borderLight}>
+          <ItemList>
             <ItemRow $border={dims.borderLight}>
               <ItemChip $bg="#fef3c7" $color="#92400e">
                 Stuck 24m

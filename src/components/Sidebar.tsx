@@ -38,17 +38,25 @@ const Wrap = styled.aside<DimProps & { $hidden: boolean; $expanded: boolean }>`
   `}
 `;
 
-// Logo block stretches to match the sidebar width when expanded.
-const LogoBlock = styled.div<{ $headerHeight: number; $width: number }>`
+// Logo block stretches to match the sidebar width when expanded, but the
+// mark stays anchored to the left in its original collapsed-width square so
+// it doesn't appear to slide across the top when the user toggles open.
+const LogoBlock = styled.div<{ $headerHeight: number; $width: number; $iconSize: number }>`
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: ${(p) => p.$width}px;
   height: ${(p) => p.$headerHeight}px;
   flex-shrink: 0;
   background: #0061eb;
   cursor: pointer;
   transition: width 0.15s cubic-bezier(0.2, 0, 0, 1);
+
+  & > svg {
+    width: 22px;
+    height: 22px;
+    margin-left: ${(p) => Math.round((p.$iconSize - 22) / 2)}px;
+  }
 `;
 
 const LogoMark = styled.svg`
@@ -70,19 +78,21 @@ const NavScroll = styled.div`
 
 // Live source: hovered nav row gets a solid #0061eb (accent) background
 // across the full sidebar width, white icon — visually contiguous with the
-// blue flyout that opens to its right.
+// blue flyout that opens to its right. When expanded, the icon stays in
+// its original collapsed-width square (left edge) and the label flows to
+// the right; the icon never slides.
 const NavItemRow = styled.button<
   DimProps & { $active: boolean; $hovered: boolean; $expanded: boolean }
 >`
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
-  gap: ${(p) => (p.$expanded ? "12px" : "0")};
+  justify-content: flex-start;
+  gap: 0;
   width: ${(p) =>
     p.$expanded ? p.$dims.sidebarOpen : p.$dims.sidebarCollapsed}px;
   height: ${(p) => p.$dims.sidebarCollapsed}px;
-  padding: ${(p) => (p.$expanded ? "0 16px" : "0")};
+  padding: 0;
   background: ${(p) => (p.$hovered ? "#0061eb" : "transparent")};
   border: none;
   cursor: pointer;
@@ -94,8 +104,7 @@ const NavItemRow = styled.button<
       : p.$dims.textSecondary};
   flex-shrink: 0;
   transition: color 0.1s ease, background 0.1s ease,
-    width 0.15s cubic-bezier(0.2, 0, 0, 1),
-    padding 0.15s cubic-bezier(0.2, 0, 0, 1);
+    width 0.15s cubic-bezier(0.2, 0, 0, 1);
 
   ${(p) =>
     p.$active &&
@@ -119,6 +128,17 @@ const NavItemRow = styled.button<
   }
 `;
 
+// Fixed-size icon slot that matches the collapsed sidebar width — the icon
+// stays put when the sidebar expands.
+const IconSlot = styled.span<{ $size: number }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: ${(p) => p.$size}px;
+  height: ${(p) => p.$size}px;
+  flex-shrink: 0;
+`;
+
 const NavLabel = styled.span<{ $color: string }>`
   font-family: var(--font-epilogue), "Epilogue", sans-serif;
   font-weight: 500;
@@ -128,6 +148,8 @@ const NavLabel = styled.span<{ $color: string }>`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 `;
 
 /* ──────────── Blue flyout (one per nav item, on hover) ──────────── */
@@ -291,6 +313,7 @@ export default function Sidebar({
       <LogoBlock
         $headerHeight={dims.headerHeight}
         $width={expanded ? dims.sidebarOpen : dims.sidebarCollapsed}
+        $iconSize={dims.sidebarCollapsed}
         onClick={() => navigate("/")}
         style={{ cursor: "pointer" }}
         title="Home"
@@ -318,7 +341,9 @@ export default function Sidebar({
             onMouseEnter={(e) => onEnter(item.label, e.currentTarget)}
             title={item.label}
           >
-            {icons[item.icon]}
+            <IconSlot $size={dims.sidebarCollapsed}>
+              {icons[item.icon]}
+            </IconSlot>
             {expanded && (
               <NavLabel
                 $color={

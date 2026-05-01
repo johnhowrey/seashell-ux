@@ -766,12 +766,10 @@ const handledSummary = [
   "Filed creation notice for staging-environment",
 ];
 
+// No surrounding box — focus block sits in flow with whitespace.
 const FocusBlock = styled.div<{ $surface: string; $border: string }>`
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-radius: 14px;
-  padding: 20px 22px;
-  margin: 4px 0 14px;
+  padding: 4px 0 20px;
+  margin: 0 0 4px;
 `;
 
 const FocusLead = styled.p<{ $color: string }>`
@@ -815,21 +813,17 @@ const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
   cursor: pointer;
 `;
 
-const ItemList = styled.div<{ $surface: string; $border: string }>`
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-radius: 12px;
-  overflow: hidden;
-`;
+// Rows stack with hairline dividers; no wrapping card.
+const ItemList = styled.div<{ $surface: string; $border: string }>``;
 
 const ItemRow = styled.div<{ $border: string }>`
   display: grid;
   grid-template-columns: 92px 1fr auto;
   gap: 16px;
   align-items: center;
-  padding: 14px 18px;
-  border-bottom: 1px solid ${(p) => p.$border};
-  &:last-child { border-bottom: none; }
+  padding: 16px 0;
+  border-top: 1px solid ${(p) => p.$border};
+  &:first-child { border-top: none; padding-top: 8px; }
 `;
 
 const ItemVerb = styled.button<{ $accent: string }>`
