@@ -156,19 +156,37 @@ const MiniShell = styled.div<{ $variant: ShellVariant; $bg: string }>`
   display: flex;
   overflow: hidden;
   border-radius: ${(p) => (p.$variant === "floating" ? "4px" : "0")};
+  ${(p) =>
+    p.$variant === "floating" &&
+    `
+    padding: 3px;
+    gap: 3px;
+  `}
 `;
 
-const MiniSidebar = styled.div<{ $bg: string }>`
+const MiniSidebar = styled.div<{ $bg: string; $variant: ShellVariant }>`
   width: 14%;
   background: ${(p) => p.$bg};
   flex-shrink: 0;
+  ${(p) =>
+    p.$variant === "floating" &&
+    `
+    border-radius: 3px;
+    overflow: hidden;
+  `}
 `;
 
-const MiniMain = styled.div<{ $bg: string }>`
+const MiniMain = styled.div<{ $bg: string; $variant: ShellVariant }>`
   flex: 1;
   background: ${(p) => p.$bg};
   display: flex;
   flex-direction: column;
+  ${(p) =>
+    p.$variant === "floating" &&
+    `
+    border-radius: 3px;
+    overflow: hidden;
+  `}
 `;
 
 const MiniHeader = styled.div<{ $bg: string }>`
@@ -426,8 +444,8 @@ function VariantPreviewArt({ v }: VariantPreviewProps) {
   return (
     <VariantPreview $bg={bg}>
       <MiniShell $variant={v} $bg={shellBg}>
-        {!isZen && <MiniSidebar $bg={sidebarBg} />}
-        <MiniMain $bg={mainBg}>
+        {!isZen && <MiniSidebar $bg={sidebarBg} $variant={v} />}
+        <MiniMain $bg={mainBg} $variant={v}>
           <MiniHeader $bg={headerBg} />
           <MiniContent>
             <MiniCard $bg={cardBg} />
@@ -457,8 +475,8 @@ function ColorPreviewArt({ m }: ColorPreviewProps) {
   return (
     <VariantPreview $bg={isDark ? "#1a1a2e" : "#f5f5f5"}>
       <MiniShell $variant="standard" $bg={shellBg}>
-        <MiniSidebar $bg={sidebarBg} />
-        <MiniMain $bg={mainBg}>
+        <MiniSidebar $bg={sidebarBg} $variant="standard" />
+        <MiniMain $bg={mainBg} $variant="standard">
           <MiniHeader $bg={headerBg} />
           <MiniContent>
             <MiniCard $bg={cardBg} />

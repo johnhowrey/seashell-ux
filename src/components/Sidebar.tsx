@@ -192,16 +192,29 @@ interface SidebarProps {
   notificationsOpen?: boolean;
 }
 
+// Abstract mark — three stacked rounded rectangles forming a stylized
+// shell silhouette. Intentionally non-specific.
 const DOLogoSVG = (
-  <LogoMark viewBox="0 0 22 22" fill="none">
-    <circle cx="11" cy="11" r="11" fill="#ffffff" />
-    <circle cx="11" cy="11" r="10" fill="#0061eb" />
-    <path
-      d="M11 19v-3a5 5 0 005-5h3a8 8 0 01-8 8z"
+  <LogoMark viewBox="0 0 24 24" fill="none">
+    <rect x="4" y="4" width="16" height="3" rx="1.5" fill="#ffffff" />
+    <rect
+      x="4"
+      y="10.5"
+      width="13"
+      height="3"
+      rx="1.5"
       fill="#ffffff"
+      opacity="0.78"
     />
-    <path d="M7 13v3h3v-3z" fill="#ffffff" opacity="0.85" />
-    <path d="M5 11v2h2v-2z" fill="#ffffff" opacity="0.55" />
+    <rect
+      x="4"
+      y="17"
+      width="9"
+      height="3"
+      rx="1.5"
+      fill="#ffffff"
+      opacity="0.55"
+    />
   </LogoMark>
 );
 
@@ -250,9 +263,8 @@ export default function Sidebar({
           </NavItemRow>
         ))}
 
-        {hovered && (
+        {hovered && hovered.items.length > 0 && (
           <Flyout $top={hoveredTop}>
-            <FlyoutItem type="button">{hovered.label}</FlyoutItem>
             {hovered.items.map((sub) => (
               <FlyoutItem key={sub} type="button">
                 {sub}
