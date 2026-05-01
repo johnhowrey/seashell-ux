@@ -326,28 +326,88 @@ const ZenLabel = styled.span<{ $forceOpen?: boolean }>`
   }
 `;
 
-/* ── Create 2-level menu (CreateMenu__MenuPanel + FlyoutPanel) ── */
+/* ── Create 2-level menu (CreateMenu__MenuPanel + FlyoutPanel) ──
+   Each variant has its own dropdown character in the live source:
+     • Standard: white surface, black text
+     • Floating: dark surface (#0e0e14 ish), white text
+     • Compact:  teal surface (#00879b), white text
+     • Zen:      white surface with a "CREATE NEW" label, no chevrons
+*/
 
-const CreatePanel = styled.div`
+interface CreatePalette {
+  bg: string;
+  hoverBg: string;
+  activeBg: string;
+  text: string;
+  chevron: string;
+  border: string;
+}
+
+function createPalette(variant: ShellVariant): CreatePalette {
+  switch (variant) {
+    case "floating":
+      return {
+        bg: "#1e1e24",
+        hoverBg: "rgba(255, 255, 255, 0.08)",
+        activeBg: "rgba(255, 255, 255, 0.10)",
+        text: "#e8e8ec",
+        chevron: "#a0a0a8",
+        border: "rgba(255,255,255,0.06)",
+      };
+    case "compact":
+      return {
+        bg: "#00879b",
+        hoverBg: "#00707f",
+        activeBg: "#005c69",
+        text: "#ffffff",
+        chevron: "rgba(255,255,255,0.7)",
+        border: "rgba(255,255,255,0.12)",
+      };
+    case "zen":
+    case "standard":
+    default:
+      return {
+        bg: "#ffffff",
+        hoverBg: "#f3f4f6",
+        activeBg: "#f3f4f6",
+        text: "#1a1a1a",
+        chevron: "#878787",
+        border: "#e5e7eb",
+      };
+  }
+}
+
+const CreatePanel = styled.div<{ $palette: CreatePalette }>`
   position: fixed;
-  background: #ffffff;
+  background: ${(p) => p.$palette.bg};
   z-index: 100;
   width: 220px;
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   overflow: hidden;
   font-family: var(--font-inter), "Inter", sans-serif;
   padding: 4px 0;
+  border: 1px solid ${(p) => p.$palette.border};
 `;
 
-const CategoryRow = styled.button<{ $active: boolean }>`
+const CreateMenuHeader = styled.div<{ $palette: CreatePalette }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: ${(p) => p.$palette.chevron};
+  padding: 8px 16px 4px;
+`;
+
+const CategoryRow = styled.button<{ $active: boolean; $palette: CreatePalette }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   height: 38px;
   padding: 0 16px;
-  background: ${(p) => (p.$active ? "#f3f4f6" : "transparent")};
+  background: ${(p) => (p.$active ? p.$palette.activeBg : "transparent")};
   border: none;
   cursor: pointer;
   text-align: left;
@@ -355,41 +415,42 @@ const CategoryRow = styled.button<{ $active: boolean }>`
   transition: background 0.1s ease;
 
   &:hover {
-    background: #f3f4f6;
+    background: ${(p) => p.$palette.hoverBg};
   }
 `;
 
-const CategoryLabel = styled.span`
+const CategoryLabel = styled.span<{ $palette: CreatePalette }>`
   font-family: var(--font-inter), "Inter", sans-serif;
   font-weight: 500;
   font-size: 13px;
   line-height: 1;
-  color: #1a1a1a;
+  color: ${(p) => p.$palette.text};
   white-space: nowrap;
 `;
 
-const ChevronArea = styled.span`
+const ChevronArea = styled.span<{ $palette: CreatePalette }>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  color: #878787;
+  color: ${(p) => p.$palette.chevron};
 `;
 
-const FlyoutPanel = styled.div`
+const FlyoutPanel = styled.div<{ $palette: CreatePalette }>`
   position: fixed;
-  background: #ffffff;
+  background: ${(p) => p.$palette.bg};
   z-index: 101;
   min-width: 240px;
   padding: 6px 0;
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   font-family: var(--font-inter), "Inter", sans-serif;
+  border: 1px solid ${(p) => p.$palette.border};
 `;
 
-const SubItem = styled.button`
+const SubItem = styled.button<{ $palette: CreatePalette }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -404,16 +465,16 @@ const SubItem = styled.button`
   font-family: inherit;
 
   &:hover {
-    background: #f3f4f6;
+    background: ${(p) => p.$palette.hoverBg};
   }
 `;
 
-const SubItemLabel = styled.span`
+const SubItemLabel = styled.span<{ $palette: CreatePalette }>`
   font-family: var(--font-inter), "Inter", sans-serif;
   font-weight: 400;
   font-size: 13px;
   line-height: 1;
-  color: #1a1a1a;
+  color: ${(p) => p.$palette.text};
   white-space: nowrap;
 `;
 
@@ -1031,6 +1092,7 @@ function Header({
     : 0;
 
   const renderCreate = () => {
+    const palette = createPalette(variant);
     return (
       <Anchor ref={createAnchorRef}>
         {isZen ? (
@@ -1065,23 +1127,32 @@ function Header({
           <>
             <CreatePanel
               role="menu"
+              $palette={palette}
               style={{
                 top: `${createPanelTop}px`,
                 left: `${createPanelLeft}px`,
               }}
             >
+              {isZen && (
+                <CreateMenuHeader $palette={palette}>
+                  Create New
+                </CreateMenuHeader>
+              )}
               {createMenuItems.map((cat) => (
                 <CategoryRow
                   key={cat.label}
                   type="button"
                   $active={createCat === cat.label}
+                  $palette={palette}
                   onMouseEnter={() => setCreateCat(cat.label)}
                   onClick={() => setCreateCat(cat.label)}
                   aria-haspopup="menu"
                   aria-expanded={createCat === cat.label}
                 >
-                  <CategoryLabel>{cat.label}</CategoryLabel>
-                  <ChevronArea>{icons.chevronRight}</ChevronArea>
+                  <CategoryLabel $palette={palette}>{cat.label}</CategoryLabel>
+                  {!isZen && (
+                    <ChevronArea $palette={palette}>{icons.chevronRight}</ChevronArea>
+                  )}
                 </CategoryRow>
               ))}
             </CreatePanel>
@@ -1089,6 +1160,7 @@ function Header({
               <FlyoutPanel
                 ref={flyoutRef}
                 role="menu"
+                $palette={palette}
                 style={{
                   top: `${createPanelTop}px`,
                   left: `${flyoutLeft}px`,
@@ -1100,13 +1172,14 @@ function Header({
                     <SubItem
                       key={item.label}
                       type="button"
+                      $palette={palette}
                       onClick={() => {
                         setCreateOpen(false);
                         setCreateCat(null);
                         if (href) window.location.href = href;
                       }}
                     >
-                      <SubItemLabel>{item.label}</SubItemLabel>
+                      <SubItemLabel $palette={palette}>{item.label}</SubItemLabel>
                       {item.badge && (
                         <Badge $variant={item.badge}>{item.badge}</Badge>
                       )}
