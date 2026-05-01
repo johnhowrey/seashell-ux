@@ -14,24 +14,29 @@ interface DimProps {
   $dims: ShellDims;
 }
 
-/* The Gutter is a layout column whose width transitions between
-   0 and 360px so opening Notifications PUSHES main content right. */
+/* Notifications panel OVERLAYS content (matches live).
+   Gutter has zero width; Panel is absolute and slides in from left. */
 
 const Gutter = styled.div<{ $open: boolean }>`
   position: relative;
   flex-shrink: 0;
   height: 100%;
-  width: ${(p) => (p.$open ? "360px" : "0")};
-  transition: width 0.22s cubic-bezier(0.2, 0, 0, 1);
-  overflow: hidden;
+  width: 0;
+  overflow: visible;
+  pointer-events: ${(p) => (p.$open ? "auto" : "none")};
+  z-index: 25;
 `;
 
 const Panel = styled.div<{ $surface: string; $border: string; $open: boolean }>`
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  height: 100%;
   width: 360px;
   background: ${(p) => p.$surface};
   border-right: 1px solid ${(p) => p.$border};
+  box-shadow: ${(p) =>
+    p.$open ? "4px 0 24px rgba(0, 0, 0, 0.08)" : "none"};
   display: flex;
   flex-direction: column;
   transform: translateX(${(p) => (p.$open ? "0" : "-100%")});

@@ -200,37 +200,37 @@ export const accessibilityOptions = [
   {
     id: "reduce-motion",
     label: "Reduce Motion",
-    description: "Minimize animations and transitions.",
+    description: "Minimize animations and transitions",
     attr: "data-reduce-motion",
   },
   {
     id: "high-contrast",
     label: "High Contrast",
-    description: "Boost contrast for clearer separation.",
+    description: "Increase contrast for better readability",
     attr: "data-high-contrast",
   },
   {
     id: "dyslexia-font",
     label: "Dyslexia-Friendly Font",
-    description: "Switch typography to OpenDyslexic.",
+    description: "Use OpenDyslexic typeface across the UI",
     attr: "data-dyslexia-font",
   },
   {
     id: "large-text",
     label: "Large Text",
-    description: "Scale base font size up by 20%.",
+    description: "Increase the base text size by 20%",
     attr: "data-large-text",
   },
   {
     id: "enhanced-focus",
-    label: "Enhanced Focus",
-    description: "Stronger focus rings on every control.",
+    label: "Enhanced Focus Indicators",
+    description: "Show prominent outlines on focused elements",
     attr: "data-enhanced-focus",
   },
   {
     id: "underline-links",
     label: "Underline Links",
-    description: "Always underline hyperlinks for clarity.",
+    description: "Always underline links for visibility",
     attr: "data-underline-links",
   },
 ];
@@ -343,7 +343,7 @@ export const createMenuItems: {
   items: { label: string; badge?: "Beta" | "New" }[];
 }[] = [
   {
-    label: "AI Starter Kit",
+    label: "Inference",
     items: [
       { label: "1-Click Model" },
       { label: "Fine-Tune Model", badge: "Beta" },

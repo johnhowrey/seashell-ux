@@ -568,7 +568,7 @@ const AssistantButton = styled.button<HasDims & { $active: boolean }>`
   align-items: center;
   gap: 6px;
   height: 100%;
-  padding: 0 16px;
+  padding: ${({ $active }) => ($active ? "0 12px 0 16px" : "0 16px")};
   width: ${({ $active }) => ($active ? "440px" : "auto")};
   overflow: hidden;
   border: none;
@@ -577,7 +577,7 @@ const AssistantButton = styled.button<HasDims & { $active: boolean }>`
   font-weight: 500;
   font-size: 13px;
   line-height: 1;
-  cursor: pointer;
+  cursor: ${({ $active }) => ($active ? "default" : "pointer")};
   white-space: nowrap;
   background: linear-gradient(
     17.61deg,
@@ -590,7 +590,7 @@ const AssistantButton = styled.button<HasDims & { $active: boolean }>`
   flex-shrink: 0;
 
   &:hover {
-    filter: brightness(1.06);
+    filter: ${({ $active }) => ($active ? "none" : "brightness(1.06)")};
   }
 `;
 
@@ -600,6 +600,52 @@ const KeyHint = styled.span`
   font-size: 11px;
   opacity: 0.55;
   margin-left: 2px;
+`;
+
+const AssistantHeaderRow = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const AssistantBeta = styled.span`
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: rgba(255, 255, 255, 0.22);
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: #ffffff;
+`;
+
+const AssistantHeaderActions = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+`;
+
+const PanelIconButton = styled.span`
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+  }
 `;
 
 /* ────────────────────────── Hooks + helpers ────────────────────────── */
@@ -1133,11 +1179,53 @@ function Header({
       >
         {icons.sparkles}
       </ZenIconButton>
+    ) : assistantOpen ? (
+      <AssistantButton
+        $variant={variant}
+        $dims={dims}
+        $active
+        type="button"
+        aria-label="AI Assistant"
+        onClick={(e) => {
+          // panel-header mode: clicking outside the icon buttons does nothing
+          e.stopPropagation();
+        }}
+      >
+        <AssistantHeaderRow>
+          {icons.sparkles}
+          AI Assistant
+          <AssistantBeta>Beta</AssistantBeta>
+        </AssistantHeaderRow>
+        <AssistantHeaderActions>
+          <PanelIconButton
+            role="button"
+            aria-label="Minimize"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleAssistant();
+            }}
+          >
+            {icons.minimize}
+          </PanelIconButton>
+          <PanelIconButton
+            role="button"
+            aria-label="Close"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleAssistant();
+            }}
+          >
+            {icons.close}
+          </PanelIconButton>
+        </AssistantHeaderActions>
+      </AssistantButton>
     ) : (
       <AssistantButton
         $variant={variant}
         $dims={dims}
-        $active={assistantOpen}
+        $active={false}
         type="button"
         onClick={onToggleAssistant}
         aria-label={`AI Assistant (${cmd}K)`}

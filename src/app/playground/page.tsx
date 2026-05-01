@@ -960,23 +960,8 @@ export default function PlaygroundPage() {
                         </div>
                       </BotRow>
                       <UserRow>
-                        <UserBubble $bg={userBubbleBg}>Yes</UserBubble>
+                        <UserBubble $bg={userBubbleBg}>What is an agent?</UserBubble>
                       </UserRow>
-                      <BotRow>
-                        <BotAvatar $bg={model.bg}>{model.letter}</BotAvatar>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                          <BubbleMeta $color={dims.textMuted}>
-                            Thursday 7:43pm
-                          </BubbleMeta>
-                          <Bubble
-                            $bg={isDark ? "rgba(255,255,255,0.04)" : "#f6f8fb"}
-                            $border={dims.borderLight}
-                            $color={dims.textPrimary}
-                          >
-                            Was this an agent?
-                          </Bubble>
-                        </div>
-                      </BotRow>
                     </ChatBody>
                     <ChatFooter $border={dims.borderLight}>
                       <ChatInputWrap
@@ -1014,8 +999,11 @@ export default function PlaygroundPage() {
                       </DeploySub>
                     </DeployLeft>
                     <DeployRight>
-                      <DeployCost $color={dims.textSecondary}>
-                        $0.20 / 1M tokens
+                      <DeployCost $color={dims.textPrimary}>
+                        <strong>$0.20 / 1M tokens</strong>{" "}
+                        <s style={{ color: dims.textMuted, fontWeight: 400 }}>
+                          $0.60 / 1M tokens on AWS
+                        </s>
                       </DeployCost>
                       <DeployBtn
                         type="button"
@@ -1054,10 +1042,10 @@ export default function PlaygroundPage() {
 
               <StatGrid>
                 {[
-                  { label: "Total Tokens In", value: "1.24M", delta: "+8.4% wow", color: "#0ea5e9" },
-                  { label: "Total Tokens Out", value: "892K", delta: "+12.1% wow", color: "#f59e0b" },
-                  { label: "Total Token Cost", value: "$42.18", delta: "this month", color: "#22c55e" },
-                  { label: "Savings", value: "$67.30", delta: "vs hyperscaler", color: "#a855f7" },
+                  { label: "Total Tokens In", value: "1.24M", delta: "↑ +5%", color: "#0ea5e9" },
+                  { label: "Total Tokens Out", value: "892K", delta: "↑ +3%", color: "#f59e0b" },
+                  { label: "Total Token Cost", value: "$42.18", delta: "↓ -2%", color: "#22c55e" },
+                  { label: "Savings", value: "$67.30", delta: "vs competitors", color: "#a855f7" },
                 ].map((s) => (
                   <StatCard
                     key={s.label}

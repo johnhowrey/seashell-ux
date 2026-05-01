@@ -838,7 +838,9 @@ const NextHeading = styled.h3<{ $color: string }>`
   margin: 0 0 10px;
 `;
 const NextLink = styled.button<{ $accent: string }>`
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   width: 100%;
   text-align: left;
   background: none;
@@ -850,6 +852,27 @@ const NextLink = styled.button<{ $accent: string }>`
   color: ${(p) => p.$accent};
   cursor: pointer;
   &:hover { text-decoration: underline; }
+`;
+
+const ExtIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  opacity: 0.85;
+`;
+
+const FinalizeCTA = styled.button<{ $accent: string; $hover: string }>`
+  padding: 10px 22px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: ${(p) => p.$accent};
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  &:hover { background: ${(p) => p.$hover}; }
 `;
 
 /* ─── Data ─── */
@@ -919,8 +942,8 @@ const tiers: { id: string; label: string; sub: string; description: string }[] =
 const projects = ["My First Project", "Production Infrastructure", "Staging"];
 
 const regions = [
-  { id: "nyc2", flag: "🇺🇸", city: "New York", dc: "Datacenter 2 — NYC2", tag: "1 standby", tagBg: "#e0f2fe", tagColor: "#075985" },
   { id: "nyc3", flag: "🇺🇸", city: "New York", dc: "Datacenter 3 — NYC3", tag: "primary", tagBg: "#dcfce7", tagColor: "#166534" },
+  { id: "nyc2", flag: "🇺🇸", city: "New York", dc: "Datacenter 2 — NYC2", tag: "1 standby", tagBg: "#e0f2fe", tagColor: "#075985" },
 ];
 
 /* ─── Page ─── */
@@ -930,12 +953,12 @@ export default function CreateDatabasePage() {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  const [engineId, setEngineId] = useState("postgresql");
+  const [engineId, setEngineId] = useState("mongodb");
   const [tier, setTier] = useState("basic");
   const [planId, setPlanId] = useState("p1");
   const [storageGb, setStorageGb] = useState(51);
-  const [haKind, setHaKind] = useState<"upgrade" | "automated">("automated");
-  const [standby, setStandby] = useState<"none" | "one" | "two">("none");
+  const [haKind, setHaKind] = useState<"upgrade" | "automated">("upgrade");
+  const [standby, setStandby] = useState<"none" | "one" | "two">("two");
   const [regionId, setRegionId] = useState("nyc3");
   const [showMoreRegions, setShowMoreRegions] = useState(false);
   const [clusterName, setClusterName] = useState("db-postgresql-nyc3");
@@ -1487,6 +1510,15 @@ export default function CreateDatabasePage() {
                       ))}
                     </SelectInput>
                   </FormField>
+                  <div style={{ marginTop: 16 }}>
+                    <FinalizeCTA
+                      type="button"
+                      $accent={dims.accent}
+                      $hover={dims.accentHover}
+                    >
+                      Create
+                    </FinalizeCTA>
+                  </div>
                 </SectionCard>
               </MainColumn>
 
@@ -1619,9 +1651,11 @@ export default function CreateDatabasePage() {
                   </NextHeading>
                   <NextLink type="button" $accent={dims.accent}>
                     Migrate current Database
+                    <ExtIcon aria-hidden>↗</ExtIcon>
                   </NextLink>
                   <NextLink type="button" $accent={dims.accent}>
                     Add Trusted Sources
+                    <ExtIcon aria-hidden>↗</ExtIcon>
                   </NextLink>
                 </NextCard>
               </SidePanel>

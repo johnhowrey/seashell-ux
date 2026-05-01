@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { ShellDims, assistantPrompts } from "../lib/theme";
 import { icons } from "../lib/icons";
@@ -37,79 +37,6 @@ const Panel = styled.aside<{ $open: boolean; $surface: string }>`
   transform: translateX(${(p) => (p.$open ? "0" : "100%")});
   transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
   overflow: hidden;
-`;
-
-/* ────────────────────────────── Header ────────────────────────────── */
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 52px;
-  padding: 0 12px;
-  flex-shrink: 0;
-  background: linear-gradient(
-    17.61deg,
-    rgb(0, 12, 121) 5.31%,
-    rgb(10, 78, 235) 26.68%,
-    rgb(0, 105, 255) 48.05%,
-    rgb(198, 174, 255) 96.08%
-  );
-  color: #ffffff;
-`;
-
-const HeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-left: 4px;
-`;
-
-const HeaderTitle = styled.span`
-  font-family: var(--font-epilogue), "Epilogue", sans-serif;
-  font-weight: 500;
-  font-size: 13px;
-  color: #ffffff;
-`;
-
-const BetaBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-weight: 600;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 1px 6px;
-  border-radius: 10px;
-  color: #ffffff;
-`;
-
-const HeaderRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-const HeaderIconButton = styled.button`
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.85);
-  cursor: pointer;
-  border-radius: 4px;
-  font-family: inherit;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-  }
 `;
 
 /* ────────────────────────────── Body ────────────────────────────── */
@@ -320,35 +247,11 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
   dims,
 }) => {
   const [query, setQuery] = useState("");
-
-  const handleMinimize = useCallback(() => onClose(), [onClose]);
+  void onClose;
 
   return (
     <Gutter $open={open} aria-hidden={!open}>
       <Panel $open={open} $surface={dims.surfaceBg}>
-        <Header>
-          <HeaderLeft>
-            <HeaderTitle>AI Assistant</HeaderTitle>
-            <BetaBadge>Beta</BetaBadge>
-          </HeaderLeft>
-          <HeaderRight>
-            <HeaderIconButton
-              onClick={handleMinimize}
-              aria-label="Minimize"
-              type="button"
-            >
-              {icons.minimize}
-            </HeaderIconButton>
-            <HeaderIconButton
-              onClick={onClose}
-              aria-label="Close"
-              type="button"
-            >
-              {icons.close}
-            </HeaderIconButton>
-          </HeaderRight>
-        </Header>
-
         <Body>
           <WelcomeWave>👋</WelcomeWave>
           <WelcomeHeading $dims={dims}>
@@ -380,7 +283,7 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
               $dims={dims}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask me anything..."
+              placeholder="How can I help you?"
             />
             <InputActions>
               <SendButton $dims={dims} aria-label="Send" type="button">
