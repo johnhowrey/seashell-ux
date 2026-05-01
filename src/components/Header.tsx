@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styled, { css } from "styled-components";
-import { ShellVariant, ShellDims, createMenuItems } from "../lib/theme";
+import {
+  ShellVariant,
+  ShellDims,
+  createMenuItems,
+  searchItems,
+  searchRecentlyViewed,
+  searchRecentlyCreated,
+  breadcrumbPopovers,
+} from "../lib/theme";
 import { icons } from "../lib/icons";
 
 interface HeaderProps {
@@ -11,6 +19,8 @@ interface HeaderProps {
   onToggleAssistant: () => void;
   assistantOpen: boolean;
   onBack?: () => void;
+  onToggleNotifications?: () => void;
+  notificationsOpen?: boolean;
   breadcrumbs?: string[];
 }
 
@@ -26,12 +36,15 @@ const Container = styled.header<HasDims>`
   align-items: center;
   justify-content: space-between;
   height: ${({ $dims }) => $dims.headerHeight}px;
-  padding-left: 20px;
+  padding-left: ${({ $variant }) => ($variant === "zen" ? "12px" : "20px")};
+  padding-right: ${({ $variant }) => ($variant === "zen" ? "12px" : "0")};
   flex-shrink: 0;
   background: ${({ $variant, $dims }) =>
     $variant === "zen" ? $dims.accent : $dims.headerBg};
   border-bottom: ${({ $variant, $dims }) =>
-    $variant === "floating" ? "none" : `1px solid ${$dims.borderLight}`};
+    $variant === "floating" || $variant === "zen"
+      ? "none"
+      : `1px solid ${$dims.borderLight}`};
   position: relative;
   z-index: 30;
 
@@ -41,7 +54,6 @@ const Container = styled.header<HasDims>`
       border-radius: ${$dims.borderRadius}px;
       margin: ${$dims.gap}px ${$dims.gap}px 0 ${$dims.gap}px;
       border: 1px solid ${$dims.borderLight};
-      overflow: visible;
     `}
 `;
 
@@ -52,7 +64,6 @@ const BreadcrumbWrap = styled.div`
   align-items: center;
   flex: 1;
   min-width: 0;
-  overflow: visible;
 `;
 
 const BackButton = styled.button<HasDims>`
@@ -74,6 +85,25 @@ const BackButton = styled.button<HasDims>`
   }
 `;
 
+const HamburgerButton = styled.button<HasDims>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 6px;
+  border-radius: 6px;
+  color: #ffffff;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+`;
+
 const CrumbTrail = styled.div`
   display: flex;
   align-items: center;
@@ -88,7 +118,7 @@ const CrumbGroup = styled.div`
   position: relative;
 `;
 
-const Segment = styled.button<HasDims & { $active: boolean }>`
+const Segment = styled.button<HasDims & { $active: boolean; $expanded: boolean }>`
   display: block;
   background: none;
   border: none;
@@ -104,23 +134,21 @@ const Segment = styled.button<HasDims & { $active: boolean }>`
   position: relative;
   transition: max-width 0.15s ease, color 0.1s ease;
 
-  ${({ $active, $variant, $dims }) =>
-    $active
-      ? css`
-          color: ${$variant === "zen" ? "#ffffff" : $dims.textPrimary};
-          max-width: none;
-          flex-shrink: 0;
-        `
-      : css`
-          color: ${$variant === "zen"
-            ? "rgba(255,255,255,0.7)"
-            : "#878787"};
-          max-width: 68px;
-          flex-shrink: 1;
-          &:hover {
-            color: ${$variant === "zen" ? "#ffffff" : $dims.textPrimary};
-          }
-        `}
+  ${({ $active, $expanded, $variant, $dims }) => {
+    const isLitLight =
+      $variant === "zen" ? "#ffffff" : $dims.textPrimary;
+    const isLitDark =
+      $variant === "zen" ? "rgba(255,255,255,0.7)" : "#878787";
+    const lit = $active || $expanded;
+    return css`
+      color: ${lit ? isLitLight : isLitDark};
+      max-width: ${lit ? "none" : "68px"};
+      flex-shrink: ${$active ? 0 : 1};
+      &:hover {
+        color: ${$variant === "zen" ? "#ffffff" : $dims.textPrimary};
+      }
+    `;
+  }}
 `;
 
 const Separator = styled.span<HasDims>`
@@ -133,59 +161,80 @@ const Separator = styled.span<HasDims>`
   flex-shrink: 0;
 `;
 
-/* ───────────── Generic dropdown panels (anchored below) ───────────── */
+/* ─── Blue breadcrumb popover (Header__Dropdown spec from live) ─── */
 
-const Popover = styled.div<{ $surface: string; $border: string }>`
+const BluePopover = styled.div<{ $wide?: boolean }>`
   position: absolute;
   top: calc(100% + 4px);
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-radius: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-  z-index: 40;
-  overflow: hidden;
-  min-width: 220px;
+  left: 0;
+  background: #0061eb;
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  min-width: ${(p) => (p.$wide ? "220px" : "140px")};
+  max-width: ${(p) => (p.$wide ? "320px" : "200px")};
+  max-height: ${(p) => (p.$wide ? "400px" : "none")};
+  overflow-y: ${(p) => (p.$wide ? "auto" : "visible")};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-family: var(--font-inter), "Inter", sans-serif;
 `;
 
-const PopoverItem = styled.button<{ $color: string; $hoverBg: string }>`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 14px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  color: ${(p) => p.$color};
-  text-align: left;
-  &:hover {
-    background: ${(p) => p.$hoverBg};
+const BlueSectionHead = styled.div`
+  font-weight: 500;
+  font-size: 9px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 0 4px;
+
+  &:first-child {
+    padding-top: 2px;
   }
 `;
 
-const PopoverLabel = styled.div<{ $color: string }>`
-  padding: 8px 14px 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: ${(p) => p.$color};
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+const BlueItem = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 5px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    opacity: 0.75;
+  }
 `;
 
-const PopoverDivider = styled.div<{ $color: string }>`
-  height: 1px;
-  background: ${(p) => p.$color};
-  margin: 4px 0;
+const BlueItemLabel = styled.span`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const Swatch = styled.span<{ $color: string }>`
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  background: ${(p) => p.$color};
+const BlueItemDetail = styled.span`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.45);
+  margin-left: auto;
+  padding-left: 8px;
+  white-space: nowrap;
   flex-shrink: 0;
 `;
 
@@ -193,16 +242,19 @@ const Swatch = styled.span<{ $color: string }>`
 
 const Actions = styled.div<HasDims>`
   display: flex;
-  align-items: stretch;
-  height: ${({ $dims }) => $dims.headerHeight}px;
+  align-items: ${({ $variant }) => ($variant === "zen" ? "center" : "stretch")};
+  gap: ${({ $variant }) => ($variant === "zen" ? "6px" : "0")};
+  height: ${({ $dims, $variant }) => ($variant === "zen" ? "auto" : `${$dims.headerHeight}px`)};
   flex-shrink: 0;
   position: relative;
 `;
 
-const CreateAnchor = styled.div`
+const Anchor = styled.div`
   position: relative;
   display: flex;
 `;
+
+/* ── Create button (full-height standard) and ZenTrigger (compact) ── */
 
 const CreateButton = styled.button<HasDims & { $open: boolean }>`
   display: flex;
@@ -211,12 +263,7 @@ const CreateButton = styled.button<HasDims & { $open: boolean }>`
   gap: 6px;
   height: 100%;
   padding: 0 16px;
-  background: ${({ $variant, $open }) => {
-    if ($variant === "zen") {
-      return $open ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.16)";
-    }
-    return $open ? "#00707f" : "#00879b";
-  }};
+  background: ${({ $open }) => ($open ? "#00707f" : "#00879b")};
   border: none;
   color: #ffffff;
   font-family: var(--font-epilogue), "Epilogue", sans-serif;
@@ -228,28 +275,167 @@ const CreateButton = styled.button<HasDims & { $open: boolean }>`
   transition: background 0.15s ease;
 
   &:hover {
-    background: ${({ $variant }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.24)" : "#00707f"};
+    background: #00707f;
   }
 `;
 
-const CreateMenuPanel = styled.div<{ $surface: string; $border: string }>`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
+const ZenIconButton = styled.button<{ $open?: boolean }>`
+  display: flex;
+  align-items: center;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 ${(p) => (p.$open ? "12px" : "9px")};
+  border-radius: 6px;
+  background: ${(p) =>
+    p.$open ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.12)"};
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  flex-shrink: 0;
+  gap: ${(p) => (p.$open ? "6px" : "0")};
+  overflow: hidden;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  transition: background 0.25s ease, gap 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    padding 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    gap: 6px;
+    padding: 0 12px;
+  }
+`;
+
+const ZenLabel = styled.span<{ $forceOpen?: boolean }>`
+  max-width: ${(p) => (p.$forceOpen ? "120px" : "0")};
+  overflow: hidden;
+  opacity: ${(p) => (p.$forceOpen ? 1 : 0)};
+  white-space: nowrap;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  transition: max-width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    opacity 0.25s ease;
+
+  button:hover > & {
+    max-width: 120px;
+    opacity: 1;
+  }
+`;
+
+/* ── Create 2-level menu (CreateMenu__MenuPanel + FlyoutPanel) ── */
+
+const CreatePanel = styled.div`
+  position: fixed;
+  background: #ffffff;
+  z-index: 100;
+  width: 220px;
   border-radius: 8px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
-  z-index: 40;
-  min-width: 280px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  padding: 4px 0;
+`;
+
+const CategoryRow = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 38px;
+  padding: 0 16px;
+  background: ${(p) => (p.$active ? "#f3f4f6" : "transparent")};
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s ease;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+const CategoryLabel = styled.span`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  color: #1a1a1a;
+  white-space: nowrap;
+`;
+
+const ChevronArea = styled.span`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #878787;
+`;
+
+const FlyoutPanel = styled.div`
+  position: fixed;
+  background: #ffffff;
+  z-index: 101;
+  min-width: 240px;
   padding: 6px 0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
   font-family: var(--font-inter), "Inter", sans-serif;
 `;
+
+const SubItem = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  height: 38px;
+  padding: 0 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+const SubItemLabel = styled.span`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1;
+  color: #1a1a1a;
+  white-space: nowrap;
+`;
+
+const Badge = styled.span<{ $variant: "Beta" | "New" }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: ${(p) => (p.$variant === "Beta" ? "#116932" : "#1e40af")};
+  background: ${(p) => (p.$variant === "Beta" ? "#dcfce7" : "#dbeafe")};
+`;
+
+/* ── Search field + dropdown ── */
 
 const SearchAnchor = styled.div`
   position: relative;
   display: flex;
+  height: 100%;
 `;
 
 const SearchWrap = styled.div<HasDims & { $focused: boolean }>`
@@ -257,24 +443,15 @@ const SearchWrap = styled.div<HasDims & { $focused: boolean }>`
   display: flex;
   align-items: center;
   height: 100%;
-  background: ${({ $variant, $dims }) =>
-    $variant === "zen" ? "rgba(255,255,255,0.1)" : $dims.surfaceBg};
+  background: ${({ $variant }) =>
+    $variant === "zen" ? "rgba(255,255,255,0.1)" : "#ffffff"};
   min-width: 240px;
   border-left: 1px solid
-    ${({ $variant, $dims, $focused }) =>
-      $variant === "zen"
-        ? "rgba(255,255,255,0.2)"
-        : $focused
-          ? $dims.accent
-          : $dims.borderLight};
+    ${({ $variant, $dims }) =>
+      $variant === "zen" ? "rgba(255,255,255,0.2)" : $dims.borderLight};
   border-right: 1px solid
-    ${({ $variant, $dims, $focused }) =>
-      $variant === "zen"
-        ? "rgba(255,255,255,0.2)"
-        : $focused
-          ? $dims.accent
-          : $dims.borderLight};
-  transition: border-color 0.15s ease;
+    ${({ $variant, $dims }) =>
+      $variant === "zen" ? "rgba(255,255,255,0.2)" : $dims.borderLight};
 `;
 
 const SearchIcon = styled.span<HasDims>`
@@ -297,31 +474,94 @@ const SearchInput = styled.input<HasDims>`
   font-family: var(--font-epilogue), "Epilogue", sans-serif;
   font-weight: 500;
   font-size: 13px;
-  color: ${({ $variant, $dims }) =>
-    $variant === "zen" ? "#ffffff" : $dims.textPrimary};
+  color: ${({ $variant }) => ($variant === "zen" ? "#ffffff" : "#000000")};
 
   &::placeholder {
-    color: ${({ $variant, $dims }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.7)" : $dims.textMuted};
+    color: ${({ $variant }) =>
+      $variant === "zen" ? "rgba(255,255,255,0.7)" : "#999999"};
     font-weight: 500;
   }
 `;
 
-const SearchPopover = styled.div<{ $surface: string; $border: string }>`
+const SearchDropdown = styled.div<{ $width: number }>`
   position: absolute;
-  top: 100%;
+  top: calc(100% + 0px);
   left: 0;
-  right: 0;
-  background: ${(p) => p.$surface};
-  border: 1px solid ${(p) => p.$border};
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-  z-index: 40;
-  max-height: 360px;
+  width: ${(p) => Math.max(p.$width, 360)}px;
+  max-height: 420px;
   overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 2000;
   font-family: var(--font-inter), "Inter", sans-serif;
 `;
+
+const SectionHeader = styled.div`
+  padding: 10px 16px 4px;
+  font-weight: 600;
+  font-size: 11px;
+  color: #878787;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const ResultRow = styled.button<{ $highlighted: boolean }>`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 16px;
+  height: 40px;
+  border: none;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 13px;
+  color: #000000;
+  cursor: pointer;
+  background: ${(p) => (p.$highlighted ? "#f0f4ff" : "transparent")};
+  gap: 8px;
+  text-align: left;
+
+  &:hover {
+    background: #f0f4ff;
+  }
+`;
+
+const ResultLabel = styled.span`
+  flex-shrink: 0;
+`;
+
+const Match = styled.span`
+  color: #0061eb;
+  font-weight: 600;
+`;
+
+const ResultDetail = styled.span`
+  font-weight: 400;
+  font-size: 12px;
+  color: #878787;
+  margin-left: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const ResultEnter = styled.span`
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  color: #878787;
+`;
+
+const NoResults = styled.div`
+  padding: 20px 16px;
+  font-size: 13px;
+  color: #999999;
+  text-align: center;
+`;
+
+/* ── AI Assistant button ── */
 
 const AssistantButton = styled.button<HasDims & { $active: boolean }>`
   display: flex;
@@ -368,45 +608,7 @@ const KeyHint = styled.span`
   margin-left: 2px;
 `;
 
-/* ────────────────────────── Breadcrumb data ────────────────────────── */
-
-const DEFAULT_BREADCRUMBS = [
-  "Acme Corp",
-  "Platform Engineering",
-  "roadtrip-copilot",
-  "Dashboard",
-];
-
-const BREADCRUMB_SIBLINGS: Record<string, string[]> = {
-  "Acme Corp": ["Acme Corp", "Globex Inc.", "Initech", "+ New team"],
-  "Platform Engineering": [
-    "Platform Engineering",
-    "Growth",
-    "Data Science",
-    "+ New project",
-  ],
-  "roadtrip-copilot": [
-    "roadtrip-copilot",
-    "fleet-tracker",
-    "trip-planner-api",
-    "+ New resource",
-  ],
-  Dashboard: ["Overview", "Insights", "Activity", "Settings"],
-};
-
-const SEARCH_RECENT = [
-  "prod-llama-3 endpoint",
-  "Production Postgres cluster",
-  "VPC default-nyc1",
-];
-
-const SEARCH_SHORTCUTS = [
-  { icon: "+", label: "Create Droplet" },
-  { icon: "+", label: "Create Database" },
-  { icon: "→", label: "Open Inference Hub" },
-];
-
-/* ───────────────────────────── Hooks ───────────────────────────── */
+/* ────────────────────────── Hooks + helpers ────────────────────────── */
 
 function useOutsideClose<T extends HTMLElement>(
   open: boolean,
@@ -433,6 +635,28 @@ function useOutsideClose<T extends HTMLElement>(
   }, [open, onClose, refs]);
 }
 
+// Splits a label so the matched substring (case-insensitive) is wrapped
+// in <Match>.
+function highlight(label: string, query: string): React.ReactNode {
+  if (!query) return label;
+  const idx = label.toLowerCase().indexOf(query.toLowerCase());
+  if (idx < 0) return label;
+  return (
+    <>
+      {label.slice(0, idx)}
+      <Match>{label.slice(idx, idx + query.length)}</Match>
+      {label.slice(idx + query.length)}
+    </>
+  );
+}
+
+const DEFAULT_BREADCRUMBS = [
+  "Acme Corp",
+  "Platform Engineering",
+  "roadtrip-copilot",
+  "Dashboard",
+];
+
 /* ───────────────────────────── Component ───────────────────────────── */
 
 function Header({
@@ -441,17 +665,25 @@ function Header({
   onToggleAssistant,
   assistantOpen,
   onBack,
+  onToggleNotifications,
+  notificationsOpen,
   breadcrumbs = DEFAULT_BREADCRUMBS,
 }: HeaderProps) {
   const searchRef = useRef<HTMLInputElement>(null);
   const searchAnchorRef = useRef<HTMLDivElement>(null);
+  const searchWrapRef = useRef<HTMLDivElement>(null);
   const createAnchorRef = useRef<HTMLDivElement>(null);
+  const createButtonRef = useRef<HTMLButtonElement>(null);
+  const flyoutRef = useRef<HTMLDivElement>(null);
   const crumbAnchorRef = useRef<HTMLDivElement>(null);
 
   const [isMac, setIsMac] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [createCat, setCreateCat] = useState<string | null>(null);
+  const [createAnchorRect, setCreateAnchorRect] = useState<DOMRect | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [searchWrapWidth, setSearchWrapWidth] = useState(360);
   const [openCrumb, setOpenCrumb] = useState<number | null>(null);
 
   useEffect(() => {
@@ -461,6 +693,7 @@ function Header({
     setIsMac(mac);
   }, []);
 
+  // ⌘K toggles AI Assistant. ⌘/ focuses search.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
@@ -477,101 +710,178 @@ function Header({
     return () => window.removeEventListener("keydown", onKey);
   }, [onToggleAssistant]);
 
-  useOutsideClose(createOpen, () => setCreateOpen(false), [createAnchorRef]);
+  // Track Create button anchor rect for fixed-position panel.
+  useEffect(() => {
+    if (!createOpen) {
+      setCreateCat(null);
+      return;
+    }
+    const update = () => {
+      const r = createButtonRef.current?.getBoundingClientRect() ?? null;
+      setCreateAnchorRect(r);
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [createOpen]);
+
+  // Track search wrap width for matching dropdown width.
+  useEffect(() => {
+    const update = () => {
+      const w = searchWrapRef.current?.getBoundingClientRect().width ?? 360;
+      setSearchWrapWidth(w);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  });
+
+  useOutsideClose(createOpen, () => setCreateOpen(false), [
+    createAnchorRef,
+    flyoutRef,
+  ]);
   useOutsideClose(searchOpen, () => setSearchOpen(false), [searchAnchorRef]);
   useOutsideClose(openCrumb !== null, () => setOpenCrumb(null), [
     crumbAnchorRef,
   ]);
 
   const cmd = isMac ? "⌘" : "Ctrl+";
-  const hoverBg = dims.surfaceBg === "#ffffff" ? "#f0f4ff" : "rgba(255,255,255,0.06)";
 
-  // Filter search suggestions based on current input
-  const matchedRecent = searchValue
-    ? SEARCH_RECENT.filter((r) =>
-        r.toLowerCase().includes(searchValue.toLowerCase())
-      )
-    : SEARCH_RECENT;
-  const matchedShortcuts = searchValue
-    ? SEARCH_SHORTCUTS.filter((s) =>
-        s.label.toLowerCase().includes(searchValue.toLowerCase())
-      )
-    : SEARCH_SHORTCUTS;
+  // Search filtering: when user types, filter all items by label OR detail.
+  // When empty, show RECENTLY VIEWED + RECENTLY CREATED.
+  const filtered = useMemo(() => {
+    if (!searchValue.trim()) {
+      const recentlyViewed = searchRecentlyViewed
+        .map((label) => searchItems.find((i) => i.label === label))
+        .filter(Boolean) as typeof searchItems;
+      const recentlyCreated = searchRecentlyCreated
+        .map((label) => searchItems.find((i) => i.label === label))
+        .filter(Boolean) as typeof searchItems;
+      return [
+        { title: "Recently Viewed", items: recentlyViewed },
+        { title: "Recently Created", items: recentlyCreated },
+      ];
+    }
+    const q = searchValue.toLowerCase();
+    const matches = searchItems.filter(
+      (it) =>
+        it.label.toLowerCase().includes(q) ||
+        (it.detail || "").toLowerCase().includes(q)
+    );
+    // Group by section in original order.
+    const groups: { title: string; items: typeof searchItems }[] = [];
+    for (const m of matches) {
+      const g = groups.find((g) => g.title === m.section);
+      if (g) g.items.push(m);
+      else groups.push({ title: m.section, items: [m] });
+    }
+    return groups;
+  }, [searchValue]);
 
-  return (
-    <Container $variant={variant} $dims={dims}>
-      <BreadcrumbWrap>
-        <BackButton
-          $variant={variant}
-          $dims={dims}
-          aria-label="Go back"
-          onClick={() => onBack?.()}
-          type="button"
-        >
-          {icons.arrowLeft}
-        </BackButton>
-        <CrumbTrail ref={crumbAnchorRef}>
-          {breadcrumbs.map((part, i) => {
-            const isLast = i === breadcrumbs.length - 1;
-            const siblings = BREADCRUMB_SIBLINGS[part];
-            return (
-              <CrumbGroup key={`${part}-${i}`}>
-                <Segment
-                  $variant={variant}
-                  $dims={dims}
-                  $active={isLast}
-                  type="button"
-                  title={part}
-                  onClick={() => {
-                    if (!siblings) return;
-                    setOpenCrumb(openCrumb === i ? null : i);
-                  }}
-                  aria-haspopup={siblings ? "menu" : undefined}
-                  aria-expanded={openCrumb === i ? true : undefined}
-                >
-                  {part}
-                </Segment>
-                {!isLast && (
-                  <Separator $variant={variant} $dims={dims} aria-hidden>
-                    /
-                  </Separator>
-                )}
-                {openCrumb === i && siblings && (
-                  <Popover
-                    $surface={dims.surfaceBg}
-                    $border={dims.borderLight}
-                    style={{ left: 0 }}
-                    role="menu"
-                  >
-                    <PopoverLabel $color={dims.textMuted}>
-                      Switch
-                    </PopoverLabel>
-                    {siblings.map((s) => (
-                      <PopoverItem
-                        key={s}
-                        $color={
-                          s === part ? dims.accent : dims.textPrimary
-                        }
-                        $hoverBg={hoverBg}
+  /* ─────────────── Layout: standard / floating / compact ─────────────── */
+
+  const isZen = variant === "zen";
+
+  const renderBreadcrumb = () => (
+    <CrumbTrail ref={crumbAnchorRef}>
+      {breadcrumbs.map((part, i) => {
+        const isLast = i === breadcrumbs.length - 1;
+        const popover = breadcrumbPopovers[part];
+        const expanded = openCrumb === i;
+        const wide = !!(popover && (popover.sections[0]?.items.length ?? 0) > 5);
+        return (
+          <CrumbGroup key={`${part}-${i}`}>
+            <Segment
+              $variant={variant}
+              $dims={dims}
+              $active={isLast}
+              $expanded={expanded}
+              type="button"
+              title={part}
+              onClick={() => {
+                if (!popover) return;
+                setOpenCrumb(expanded ? null : i);
+              }}
+              aria-haspopup={popover ? "menu" : undefined}
+              aria-expanded={expanded || undefined}
+            >
+              {part}
+            </Segment>
+            {!isLast && (
+              <Separator $variant={variant} $dims={dims} aria-hidden>
+                /
+              </Separator>
+            )}
+            {expanded && popover && (
+              <BluePopover $wide={wide} role="menu">
+                {popover.sections.map((sec, si) => (
+                  <React.Fragment key={sec.title}>
+                    <BlueSectionHead
+                      style={{ paddingTop: si === 0 ? 2 : 8 }}
+                    >
+                      {sec.title.toUpperCase()}
+                    </BlueSectionHead>
+                    {sec.items.map((it) => (
+                      <BlueItem
+                        key={`${sec.title}-${it.label}`}
                         type="button"
                         onClick={() => setOpenCrumb(null)}
-                        role="menuitem"
                       >
-                        {s === part ? icons.check : <span style={{ width: 12 }} />}
-                        <span>{s}</span>
-                      </PopoverItem>
+                        <BlueItemLabel>{it.label}</BlueItemLabel>
+                        {it.detail && (
+                          <BlueItemDetail>{it.detail}</BlueItemDetail>
+                        )}
+                      </BlueItem>
                     ))}
-                  </Popover>
-                )}
-              </CrumbGroup>
-            );
-          })}
-        </CrumbTrail>
-      </BreadcrumbWrap>
+                  </React.Fragment>
+                ))}
+              </BluePopover>
+            )}
+          </CrumbGroup>
+        );
+      })}
+    </CrumbTrail>
+  );
 
-      <Actions $variant={variant} $dims={dims}>
-        <CreateAnchor ref={createAnchorRef}>
+  /* ─────────────── Create button (fixed-anchored 2-level) ─────────────── */
+
+  const activeCategory = createCat
+    ? createMenuItems.find((c) => c.label === createCat)
+    : null;
+
+  const createPanelLeft = createAnchorRect
+    ? createAnchorRect.right - 220
+    : 0;
+  const createPanelTop = createAnchorRect
+    ? createAnchorRect.bottom + 4
+    : 0;
+  const flyoutLeft = createAnchorRect
+    ? createAnchorRect.right - 220 - 244 // 220 panel + 24px overlap right
+    : 0;
+
+  const renderCreate = () => {
+    return (
+      <Anchor ref={createAnchorRef}>
+        {isZen ? (
+          <ZenIconButton
+            ref={createButtonRef}
+            type="button"
+            onClick={() => setCreateOpen((o) => !o)}
+            $open={createOpen}
+            aria-haspopup="menu"
+            aria-expanded={createOpen}
+            aria-label="Create"
+          >
+            {icons.plusBold}
+            <ZenLabel $forceOpen={createOpen}>Create</ZenLabel>
+          </ZenIconButton>
+        ) : (
           <CreateButton
+            ref={createButtonRef}
             $variant={variant}
             $dims={dims}
             $open={createOpen}
@@ -583,140 +893,205 @@ function Header({
             {icons.plusBold}
             Create
           </CreateButton>
-          {createOpen && (
-            <CreateMenuPanel
-              $surface={dims.surfaceBg}
-              $border={dims.borderLight}
+        )}
+        {createOpen && createAnchorRect && (
+          <>
+            <CreatePanel
               role="menu"
-            >
-              {createMenuItems.map((cat, idx) => (
-                <React.Fragment key={cat.category}>
-                  {idx > 0 && (
-                    <PopoverDivider $color={dims.borderLight} />
-                  )}
-                  <PopoverLabel $color={dims.textMuted}>
-                    {cat.category}
-                  </PopoverLabel>
-                  {cat.items.map((item) => (
-                    <PopoverItem
-                      key={item}
-                      $color={dims.textPrimary}
-                      $hoverBg={hoverBg}
-                      type="button"
-                      onClick={() => setCreateOpen(false)}
-                      role="menuitem"
-                    >
-                      <span style={{ color: dims.textMuted, width: 14 }}>
-                        +
-                      </span>
-                      <span>{item}</span>
-                    </PopoverItem>
-                  ))}
-                </React.Fragment>
-              ))}
-            </CreateMenuPanel>
-          )}
-        </CreateAnchor>
-
-        <SearchAnchor ref={searchAnchorRef}>
-          <SearchWrap
-            $variant={variant}
-            $dims={dims}
-            $focused={searchOpen}
-          >
-            <SearchIcon $variant={variant} $dims={dims} aria-hidden>
-              {icons.searchSm}
-            </SearchIcon>
-            <SearchInput
-              ref={searchRef}
-              $variant={variant}
-              $dims={dims}
-              type="text"
-              placeholder="Search..."
-              aria-label="Search"
-              value={searchValue}
-              onChange={(e) => {
-                setSearchValue(e.target.value);
-                setSearchOpen(true);
+              style={{
+                top: `${createPanelTop}px`,
+                left: `${createPanelLeft}px`,
               }}
-              onFocus={() => setSearchOpen(true)}
-            />
-          </SearchWrap>
-          {searchOpen && (
-            <SearchPopover
-              $surface={dims.surfaceBg}
-              $border={dims.borderLight}
             >
-              {matchedRecent.length === 0 && matchedShortcuts.length === 0 && (
-                <PopoverItem
-                  $color={dims.textMuted}
-                  $hoverBg={hoverBg}
-                  as="div"
+              {createMenuItems.map((cat) => (
+                <CategoryRow
+                  key={cat.label}
+                  type="button"
+                  $active={createCat === cat.label}
+                  onMouseEnter={() => setCreateCat(cat.label)}
+                  onClick={() => setCreateCat(cat.label)}
+                  aria-haspopup="menu"
+                  aria-expanded={createCat === cat.label}
                 >
-                  No matches
-                </PopoverItem>
-              )}
-              {matchedRecent.length > 0 && (
-                <>
-                  <PopoverLabel $color={dims.textMuted}>Recent</PopoverLabel>
-                  {matchedRecent.map((r) => (
-                    <PopoverItem
-                      key={r}
-                      $color={dims.textPrimary}
-                      $hoverBg={hoverBg}
-                      type="button"
-                      onClick={() => {
-                        setSearchValue(r);
-                        setSearchOpen(false);
-                      }}
-                    >
-                      <Swatch $color={dims.textMuted} />
-                      <span>{r}</span>
-                    </PopoverItem>
-                  ))}
-                </>
-              )}
-              {matchedShortcuts.length > 0 && (
-                <>
-                  {matchedRecent.length > 0 && (
-                    <PopoverDivider $color={dims.borderLight} />
-                  )}
-                  <PopoverLabel $color={dims.textMuted}>
-                    Shortcuts
-                  </PopoverLabel>
-                  {matchedShortcuts.map((s) => (
-                    <PopoverItem
-                      key={s.label}
-                      $color={dims.textPrimary}
-                      $hoverBg={hoverBg}
-                      type="button"
-                      onClick={() => setSearchOpen(false)}
-                    >
-                      <span style={{ color: dims.textMuted, width: 14 }}>
-                        {s.icon}
-                      </span>
-                      <span>{s.label}</span>
-                    </PopoverItem>
-                  ))}
-                </>
-              )}
-            </SearchPopover>
-          )}
-        </SearchAnchor>
+                  <CategoryLabel>{cat.label}</CategoryLabel>
+                  <ChevronArea>{icons.chevronRight}</ChevronArea>
+                </CategoryRow>
+              ))}
+            </CreatePanel>
+            {activeCategory && (
+              <FlyoutPanel
+                ref={flyoutRef}
+                role="menu"
+                style={{
+                  top: `${createPanelTop}px`,
+                  left: `${flyoutLeft}px`,
+                }}
+              >
+                {activeCategory.items.map((item) => (
+                  <SubItem
+                    key={item.label}
+                    type="button"
+                    onClick={() => {
+                      setCreateOpen(false);
+                      setCreateCat(null);
+                    }}
+                  >
+                    <SubItemLabel>{item.label}</SubItemLabel>
+                    {item.badge && (
+                      <Badge $variant={item.badge}>{item.badge}</Badge>
+                    )}
+                  </SubItem>
+                ))}
+              </FlyoutPanel>
+            )}
+          </>
+        )}
+      </Anchor>
+    );
+  };
 
-        <AssistantButton
+  /* ─────────────── Search inline dropdown ─────────────── */
+
+  const renderSearch = () => {
+    if (isZen) {
+      return (
+        <Anchor>
+          <ZenIconButton
+            type="button"
+            onClick={() => searchRef.current?.focus()}
+            aria-label="Search"
+          >
+            {icons.searchSm}
+          </ZenIconButton>
+        </Anchor>
+      );
+    }
+    return (
+      <SearchAnchor ref={searchAnchorRef}>
+        <SearchWrap
+          ref={searchWrapRef}
           $variant={variant}
           $dims={dims}
-          $active={assistantOpen}
-          type="button"
-          onClick={onToggleAssistant}
-          aria-label={`AI Assistant (${cmd}K)`}
-          title={`AI Assistant (${cmd}K)`}
+          $focused={searchOpen}
         >
-          {icons.sparkles}
-          AI Assistant
-          <KeyHint>{cmd}K</KeyHint>
-        </AssistantButton>
+          <SearchIcon $variant={variant} $dims={dims} aria-hidden>
+            {icons.searchSm}
+          </SearchIcon>
+          <SearchInput
+            ref={searchRef}
+            $variant={variant}
+            $dims={dims}
+            type="text"
+            placeholder="Search..."
+            aria-label="Search"
+            value={searchValue}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => setSearchOpen(true)}
+          />
+        </SearchWrap>
+        {searchOpen && (
+          <SearchDropdown $width={searchWrapWidth}>
+            {filtered.every((g) => g.items.length === 0) && (
+              <NoResults>No matches</NoResults>
+            )}
+            {filtered.map(
+              (group, gi) =>
+                group.items.length > 0 && (
+                  <React.Fragment key={group.title}>
+                    <SectionHeader>{group.title.toUpperCase()}</SectionHeader>
+                    {group.items.map((it, ri) => {
+                      const top = gi === 0 && ri === 0;
+                      return (
+                        <ResultRow
+                          key={`${group.title}-${it.label}`}
+                          type="button"
+                          $highlighted={top}
+                          onClick={() => {
+                            setSearchValue(it.label);
+                            setSearchOpen(false);
+                          }}
+                        >
+                          <ResultLabel>
+                            {highlight(it.label, searchValue)}
+                          </ResultLabel>
+                          {it.detail && (
+                            <ResultDetail>{it.detail}</ResultDetail>
+                          )}
+                          {top && <ResultEnter>{icons.enterReturn}</ResultEnter>}
+                        </ResultRow>
+                      );
+                    })}
+                  </React.Fragment>
+                )
+            )}
+          </SearchDropdown>
+        )}
+      </SearchAnchor>
+    );
+  };
+
+  /* ─────────────── AI Assistant button ─────────────── */
+
+  const renderAssistant = () =>
+    isZen ? (
+      <ZenIconButton
+        type="button"
+        onClick={onToggleAssistant}
+        aria-label={`AI Assistant (${cmd}K)`}
+        title={`AI Assistant (${cmd}K)`}
+      >
+        {icons.sparkles}
+      </ZenIconButton>
+    ) : (
+      <AssistantButton
+        $variant={variant}
+        $dims={dims}
+        $active={assistantOpen}
+        type="button"
+        onClick={onToggleAssistant}
+        aria-label={`AI Assistant (${cmd}K)`}
+        title={`AI Assistant (${cmd}K)`}
+      >
+        {icons.sparkles}
+        AI Assistant
+        <KeyHint>{cmd}K</KeyHint>
+      </AssistantButton>
+    );
+
+  return (
+    <Container $variant={variant} $dims={dims}>
+      <BreadcrumbWrap>
+        {isZen ? (
+          <HamburgerButton
+            $variant={variant}
+            $dims={dims}
+            type="button"
+            aria-label="Open navigation"
+            onClick={() => onToggleNotifications?.()}
+          >
+            {icons.hamburger}
+          </HamburgerButton>
+        ) : (
+          <BackButton
+            $variant={variant}
+            $dims={dims}
+            aria-label="Go back"
+            onClick={() => onBack?.()}
+            type="button"
+          >
+            {icons.arrowLeft}
+          </BackButton>
+        )}
+        {renderBreadcrumb()}
+      </BreadcrumbWrap>
+
+      <Actions $variant={variant} $dims={dims}>
+        {renderCreate()}
+        {renderSearch()}
+        {renderAssistant()}
       </Actions>
     </Container>
   );

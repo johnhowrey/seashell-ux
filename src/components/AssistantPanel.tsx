@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import styled from "styled-components";
-import type { ShellDims } from "../lib/theme";
+import { ShellDims, assistantPrompts } from "../lib/theme";
 import { icons } from "../lib/icons";
 
 interface DimProps {
@@ -133,6 +133,10 @@ const WelcomeHeading = styled.h2<DimProps>`
   letter-spacing: -0.15px;
   color: ${({ $dims }) => $dims.textPrimary};
   margin: 0 0 2px;
+`;
+
+const AccentSpan = styled.span<{ $accent: string }>`
+  color: ${(p) => p.$accent};
 `;
 
 const WelcomeSub = styled.p<DimProps>`
@@ -304,13 +308,6 @@ const Disclaimer = styled.p<DimProps>`
 
 /* ─────────────────────────────────────────────────────────────────── */
 
-const SUGGESTED_PROMPTS = [
-  "Why is my bill higher this month?",
-  "Create and configure my first Droplet",
-  "Get help from our Support team",
-  "How do I build a WordPress website?",
-];
-
 interface AssistantPanelProps {
   open: boolean;
   onClose: () => void;
@@ -355,22 +352,23 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
         <Body>
           <WelcomeWave>👋</WelcomeWave>
           <WelcomeHeading $dims={dims}>
-            I&rsquo;m your DigitalOcean AI Assistant.
+            I&rsquo;m your DigitalOcean{" "}
+            <AccentSpan $accent={dims.accent}>AI Assistant</AccentSpan>.
           </WelcomeHeading>
           <WelcomeSub $dims={dims}>What can I help you with?</WelcomeSub>
           <GradientLink type="button">Get started →</GradientLink>
 
-          <SectionLabel $dims={dims}>Suggested</SectionLabel>
+          <SectionLabel $dims={dims}>Get started</SectionLabel>
           <PromptStack>
-            {SUGGESTED_PROMPTS.map((prompt) => (
+            {assistantPrompts.map((p) => (
               <PromptCard
-                key={prompt}
+                key={p.text}
                 $dims={dims}
-                onClick={() => setQuery(prompt)}
+                onClick={() => setQuery(p.text)}
                 type="button"
               >
-                <PromptIcon $dims={dims}>{icons.sparkle}</PromptIcon>
-                {prompt}
+                <PromptIcon $dims={dims}>{icons[p.icon]}</PromptIcon>
+                {p.text}
               </PromptCard>
             ))}
           </PromptStack>

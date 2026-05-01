@@ -3,140 +3,79 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import type { ShellVariant, ColorMode, ShellDims } from "../lib/theme";
-import { navItems, PRODUCT_LABEL } from "../lib/theme";
+import { navItems } from "../lib/theme";
 import { icons } from "../lib/icons";
 
-/* ------------------------------------------------------------------ */
-/*  Transient prop interfaces                                         */
-/* ------------------------------------------------------------------ */
-
-interface SidebarWrapProps {
-  $expanded: boolean;
+interface DimProps {
+  $dims: ShellDims;
   $variant: ShellVariant;
-  $collapsedW: number;
-  $openW: number;
-  $borderRadius: number;
-  $gap: number;
-  $sidebarBg: string;
-  $borderLight: string;
 }
 
-interface NavItemProps {
-  $active: boolean;
-  $collapsedW: number;
-  $accent: string;
-  $hoverBg: string;
-  $textPrimary: string;
-  $textSecondary: string;
-  $expanded: boolean;
-}
+const W = 52;
 
-/* ------------------------------------------------------------------ */
-/*  Styled components                                                 */
-/* ------------------------------------------------------------------ */
-
-const TRANSITION = "width 0.15s cubic-bezier(0.2, 0, 0, 1)";
-
-const Wrap = styled.aside<SidebarWrapProps>`
+const Wrap = styled.aside<DimProps & { $hidden: boolean }>`
   position: relative;
-  z-index: 10;
-  display: flex;
+  display: ${(p) => (p.$hidden ? "none" : "flex")};
   flex-direction: column;
   flex-shrink: 0;
-  overflow: hidden;
-  width: ${(p) => (p.$expanded ? p.$openW : p.$collapsedW)}px;
-  transition: ${TRANSITION};
-  background: ${(p) => p.$sidebarBg};
-  border-right: 1px solid ${(p) => p.$borderLight};
-  font-family: inherit;
+  width: ${W}px;
+  min-width: ${W}px;
+  height: 100%;
+  background: ${(p) => p.$dims.sidebarBg};
+  border-right: 1px solid ${(p) => p.$dims.borderLight};
+  z-index: 20;
 
   ${(p) =>
-    p.$borderRadius > 0 &&
+    p.$variant === "floating" &&
     `
-    border-radius: ${p.$borderRadius}px;
-    margin: ${p.$gap}px 0 ${p.$gap}px ${p.$gap}px;
-    border-right: 1px solid ${p.$borderLight};
-    border: 1px solid ${p.$borderLight};
+    border-radius: ${p.$dims.borderRadius}px;
+    margin: ${p.$dims.gap}px 0 ${p.$dims.gap}px ${p.$dims.gap}px;
+    border: 1px solid ${p.$dims.borderLight};
   `}
 `;
 
-const LogoRow = styled.div<{ $headerHeight: number }>`
-  display: flex;
-  align-items: stretch;
-  height: ${(p) => p.$headerHeight}px;
-  flex-shrink: 0;
-  overflow: hidden;
-`;
-
-const LogoBlock = styled.div<{ $collapsedW: number }>`
+const LogoBlock = styled.div<{ $headerHeight: number }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${(p) => p.$collapsedW}px;
+  width: ${W}px;
+  height: ${(p) => p.$headerHeight}px;
   flex-shrink: 0;
-  background: #0f62fe;
+  background: #0061eb;
+  cursor: pointer;
 `;
 
-const LogoShape = styled.div`
-  width: 24px;
-  height: 24px;
-  background: #ffffff;
-  border-radius: 6px;
-`;
-
-const ProductLabel = styled.div<{
-  $expanded: boolean;
-  $color: string;
-  $bg: string;
-}>`
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  padding: 0 14px;
-  background: ${(p) => p.$bg};
-  font-size: 13px;
-  font-weight: 600;
-  color: ${(p) => p.$color};
-  white-space: nowrap;
-  opacity: ${(p) => (p.$expanded ? 1 : 0)};
-  pointer-events: ${(p) => (p.$expanded ? "auto" : "none")};
-  transition: opacity 0.12s ease;
-  overflow: hidden;
-  text-overflow: ellipsis;
+const LogoMark = styled.svg`
+  width: 22px;
+  height: 22px;
 `;
 
 const NavScroll = styled.div`
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;
   padding: 8px 0;
+  position: relative;
 
   &::-webkit-scrollbar {
     width: 0;
   }
 `;
 
-const NavItemRow = styled.button<NavItemProps>`
+const NavItemRow = styled.button<DimProps & { $active: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
-  width: 100%;
-  height: 52px;
+  justify-content: center;
+  width: ${W}px;
+  height: ${W}px;
   padding: 0;
-  margin: 0;
-  border: none;
   background: transparent;
+  border: none;
   cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
-  color: ${(p) => (p.$active ? p.$accent : p.$textPrimary)};
-  white-space: nowrap;
-  transition: background 0.1s ease, color 0.1s ease;
+  color: ${(p) => (p.$active ? p.$dims.accent : p.$dims.textSecondary)};
   flex-shrink: 0;
+  transition: color 0.1s ease, background 0.1s ease;
 
   ${(p) =>
     p.$active &&
@@ -145,226 +84,206 @@ const NavItemRow = styled.button<NavItemProps>`
       content: "";
       position: absolute;
       left: 0;
-      top: 8px;
-      bottom: 8px;
+      top: 12px;
+      bottom: 12px;
       width: 3px;
       border-radius: 0 2px 2px 0;
-      background: ${p.$accent};
+      background: ${p.$dims.accent};
     }
   `}
 
   &:hover {
-    background: ${(p) => p.$hoverBg};
+    color: ${(p) => p.$dims.textPrimary};
   }
 `;
 
-const IconCell = styled.span<{ $collapsedW: number }>`
+/* ──────────── Blue flyout (one per nav item, on hover) ──────────── */
+
+const Flyout = styled.div<{ $top: number }>`
+  position: fixed;
+  top: ${(p) => p.$top}px;
+  left: ${W + 4}px;
+  background: #0061eb;
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: var(--font-inter), "Inter", sans-serif;
+`;
+
+const FlyoutItem = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: ${(p) => p.$collapsedW}px;
-  height: ${(p) => p.$collapsedW}px;
-  flex-shrink: 0;
-`;
-
-const Label = styled.span<{ $expanded: boolean }>`
-  flex: 1;
-  min-width: 0;
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
+  width: 100%;
+  padding: 7px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
   text-align: left;
-  opacity: ${(p) => (p.$expanded ? 1 : 0)};
-  transition: opacity 0.12s ease;
-  pointer-events: ${(p) => (p.$expanded ? "auto" : "none")};
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-family: inherit;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #ffffff;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    opacity: 0.78;
+  }
 `;
 
-const Shortcut = styled.span<{ $expanded: boolean; $color: string }>`
-  margin-right: 12px;
-  font-size: 11px;
-  font-weight: 500;
-  color: ${(p) => p.$color};
-  opacity: ${(p) => (p.$expanded ? 1 : 0)};
-  transition: opacity 0.12s ease;
-  pointer-events: none;
-  flex-shrink: 0;
-`;
+/* ──────────── Bottom utilities ──────────── */
 
 const BottomSection = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  gap: 4px;
   flex-shrink: 0;
-  padding: 4px 0 8px;
   border-top: 1px solid transparent;
 `;
 
-const RedDot = styled.span`
-  position: absolute;
-  top: 8px;
-  right: calc(50% - 14px);
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ef4444;
-  border: 1.5px solid currentColor;
-  pointer-events: none;
-`;
-
-const BellWrap = styled.span`
+const BottomButton = styled.button<DimProps & { $active?: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: ${(p) => (p.$active ? `${p.$dims.accent}14` : "none")};
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: ${(p) =>
+    p.$active ? p.$dims.accent : p.$dims.textSecondary};
+  transition: background 0.1s ease, color 0.1s ease;
+
+  &:hover {
+    background: ${(p) => p.$dims.borderLight};
+    color: ${(p) => p.$dims.textPrimary};
+  }
 `;
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
+const RedDot = styled.span<{ $sidebarBg: string }>`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 1.5px solid ${(p) => p.$sidebarBg};
+`;
 
 interface SidebarProps {
   variant: ShellVariant;
   colorMode: ColorMode;
   dims: ShellDims;
-  onNavClick?: (label: string) => void;
   onOpenAssistant?: () => void;
+  onToggleNotifications?: () => void;
+  notificationsOpen?: boolean;
 }
+
+const DOLogoSVG = (
+  <LogoMark viewBox="0 0 22 22" fill="none">
+    <circle cx="11" cy="11" r="11" fill="#ffffff" />
+    <circle cx="11" cy="11" r="10" fill="#0061eb" />
+    <path
+      d="M11 19v-3a5 5 0 005-5h3a8 8 0 01-8 8z"
+      fill="#ffffff"
+    />
+    <path d="M7 13v3h3v-3z" fill="#ffffff" opacity="0.85" />
+    <path d="M5 11v2h2v-2z" fill="#ffffff" opacity="0.55" />
+  </LogoMark>
+);
 
 export default function Sidebar({
   variant,
-  colorMode,
+  colorMode: _colorMode,
   dims,
-  onNavClick,
   onOpenAssistant,
+  onToggleNotifications,
+  notificationsOpen,
 }: SidebarProps) {
-  const [expanded, setExpanded] = useState(false);
-  const [activeItem, setActiveItem] = useState(navItems[0].label);
+  const [activeItem, setActiveItem] = useState(navItems[1]?.label ?? "Inference Hub");
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [hoveredTop, setHoveredTop] = useState(0);
 
-  const collapsedW = dims.sidebarCollapsed;
-  const openW = dims.sidebarOpen;
-
-  /* Determine hover background based on color mode / variant */
-  const isDark =
-    colorMode === "dark" ||
-    (variant === "floating" && dims.sidebarBg !== "#ffffff");
-  const hoverBg = isDark ? "rgba(255,255,255,0.06)" : "#f0f4ff";
-
-  const handleNavClick = (label: string) => {
-    setActiveItem(label);
-    onNavClick?.(label);
+  const onEnter = (label: string, el: HTMLElement) => {
+    setHoveredItem(label);
+    const r = el.getBoundingClientRect();
+    setHoveredTop(r.top);
   };
 
-  return (
-    <Wrap
-      $expanded={expanded}
-      $variant={variant}
-      $collapsedW={collapsedW}
-      $openW={openW}
-      $borderRadius={dims.borderRadius}
-      $gap={dims.gap}
-      $sidebarBg={dims.sidebarBg}
-      $borderLight={dims.borderLight}
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
-    >
-      {/* Logo + product label */}
-      <LogoRow $headerHeight={dims.headerHeight}>
-        <LogoBlock $collapsedW={collapsedW}>
-          <LogoShape />
-        </LogoBlock>
-        <ProductLabel
-          $expanded={expanded}
-          $color={dims.textPrimary}
-          $bg={dims.sidebarBg}
-        >
-          {PRODUCT_LABEL}
-        </ProductLabel>
-      </LogoRow>
+  const hovered = navItems.find((n) => n.label === hoveredItem);
 
-      {/* Nav items */}
-      <NavScroll>
+  // Zen variant: hide sidebar entirely (header gets a hamburger).
+  const hidden = variant === "zen";
+
+  return (
+    <Wrap $variant={variant} $dims={dims} $hidden={hidden}>
+      <LogoBlock $headerHeight={dims.headerHeight}>{DOLogoSVG}</LogoBlock>
+
+      <NavScroll
+        onMouseLeave={() => setHoveredItem(null)}
+      >
         {navItems.map((item) => (
           <NavItemRow
             key={item.label}
+            $variant={variant}
+            $dims={dims}
             $active={activeItem === item.label}
-            $collapsedW={collapsedW}
-            $accent={dims.accent}
-            $hoverBg={hoverBg}
-            $textPrimary={dims.textPrimary}
-            $textSecondary={dims.textSecondary}
-            $expanded={expanded}
-            onClick={() => handleNavClick(item.label)}
+            type="button"
+            onClick={() => setActiveItem(item.label)}
+            onMouseEnter={(e) => onEnter(item.label, e.currentTarget)}
             title={item.label}
           >
-            <IconCell $collapsedW={collapsedW}>
-              {icons[item.icon]}
-            </IconCell>
-            <Label $expanded={expanded}>{item.label}</Label>
+            {icons[item.icon]}
           </NavItemRow>
         ))}
+
+        {hovered && (
+          <Flyout $top={hoveredTop}>
+            <FlyoutItem type="button">{hovered.label}</FlyoutItem>
+            {hovered.items.map((sub) => (
+              <FlyoutItem key={sub} type="button">
+                {sub}
+              </FlyoutItem>
+            ))}
+          </Flyout>
+        )}
       </NavScroll>
 
-      {/* Bottom utilities */}
       <BottomSection>
-        <NavItemRow
-          $active={false}
-          $collapsedW={collapsedW}
-          $accent={dims.accent}
-          $hoverBg={hoverBg}
-          $textPrimary={dims.textPrimary}
-          $textSecondary={dims.textSecondary}
-          $expanded={expanded}
-          onClick={() => {
-            handleNavClick("AI Assistant");
-            onOpenAssistant?.();
-          }}
-          title="AI Assistant"
-        >
-          <IconCell $collapsedW={collapsedW}>{icons.assistant}</IconCell>
-          <Label $expanded={expanded}>AI Assistant</Label>
-          <Shortcut $expanded={expanded} $color={dims.textMuted}>
-            ⌘J
-          </Shortcut>
-        </NavItemRow>
-
-        <NavItemRow
-          $active={false}
-          $collapsedW={collapsedW}
-          $accent={dims.accent}
-          $hoverBg={hoverBg}
-          $textPrimary={dims.textPrimary}
-          $textSecondary={dims.textSecondary}
-          $expanded={expanded}
-          onClick={() => handleNavClick("Settings")}
-          title="Settings"
-        >
-          <IconCell $collapsedW={collapsedW}>{icons.settings}</IconCell>
-          <Label $expanded={expanded}>Settings</Label>
-        </NavItemRow>
-
-        <NavItemRow
-          $active={false}
-          $collapsedW={collapsedW}
-          $accent={dims.accent}
-          $hoverBg={hoverBg}
-          $textPrimary={dims.textPrimary}
-          $textSecondary={dims.textSecondary}
-          $expanded={expanded}
-          onClick={() => handleNavClick("Notifications")}
+        <BottomButton
+          $variant={variant}
+          $dims={dims}
+          $active={notificationsOpen}
+          type="button"
+          aria-label="Notifications"
           title="Notifications"
+          onClick={() => onToggleNotifications?.()}
         >
-          <IconCell $collapsedW={collapsedW}>
-            <BellWrap>
-              {icons.bell}
-              <RedDot
-                style={{
-                  borderColor: dims.sidebarBg,
-                }}
-              />
-            </BellWrap>
-          </IconCell>
-          <Label $expanded={expanded}>Notifications</Label>
-        </NavItemRow>
+          {icons.bell}
+          <RedDot $sidebarBg={dims.sidebarBg} />
+        </BottomButton>
+        <BottomButton
+          $variant={variant}
+          $dims={dims}
+          type="button"
+          aria-label="Collapse navigation"
+          title="Collapse"
+        >
+          {icons.collapseLeft}
+        </BottomButton>
       </BottomSection>
     </Wrap>
   );

@@ -10,6 +10,7 @@ import AssistantPanel from "@/components/AssistantPanel";
 import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
 import { icons } from "@/lib/icons";
 import AccessibilityModal from "@/components/AccessibilityModal";
+import NotificationsPanel from "@/components/NotificationsPanel";
 
 const ShellContainer = styled.div<{
   $gap: number;
@@ -200,6 +201,7 @@ export default function ModalSmallPage() {
   const [colorMode, setColorMode] = useState<ColorMode>("digitalocean");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [a11yOpen, setA11yOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(true);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
 
@@ -213,6 +215,10 @@ export default function ModalSmallPage() {
 
   const toggleAssistant = useCallback(
     () => setAssistantOpen((p) => !p),
+    []
+  );
+  const toggleNotifications = useCallback(
+    () => setNotificationsOpen((p) => !p),
     []
   );
 
@@ -262,6 +268,13 @@ export default function ModalSmallPage() {
           colorMode={colorMode}
           dims={dims}
           onOpenAssistant={() => setAssistantOpen(true)}
+          onToggleNotifications={toggleNotifications}
+          notificationsOpen={notificationsOpen}
+        />
+        <NotificationsPanel
+          open={notificationsOpen}
+          onClose={() => setNotificationsOpen(false)}
+          dims={dims}
         />
         <MainArea $radius={dims.borderRadius}>
           <Header
@@ -269,6 +282,8 @@ export default function ModalSmallPage() {
             dims={dims}
             onToggleAssistant={toggleAssistant}
             assistantOpen={assistantOpen}
+            onToggleNotifications={toggleNotifications}
+            notificationsOpen={notificationsOpen}
           />
           <ContentRow>
             <div style={{ flex: 1, overflow: "auto" }}>

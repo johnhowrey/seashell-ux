@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import MainContent from "@/components/MainContent";
 import AssistantPanel from "@/components/AssistantPanel";
+import NotificationsPanel from "@/components/NotificationsPanel";
 import AccessibilityModal from "@/components/AccessibilityModal";
 import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
 import "./globals.css";
@@ -49,11 +50,11 @@ const ContentRow = styled.div`
   overflow: hidden;
 `;
 
-
 export default function Page() {
   const [variant, setVariant] = useState<ShellVariant>("standard");
   const [colorMode, setColorMode] = useState<ColorMode>("digitalocean");
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [a11yOpen, setA11yOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
 
@@ -61,6 +62,10 @@ export default function Page() {
 
   const toggleAssistant = useCallback(
     () => setAssistantOpen((p) => !p),
+    []
+  );
+  const toggleNotifications = useCallback(
+    () => setNotificationsOpen((p) => !p),
     []
   );
 
@@ -98,6 +103,13 @@ export default function Page() {
         colorMode={colorMode}
         dims={dims}
         onOpenAssistant={() => setAssistantOpen(true)}
+        onToggleNotifications={toggleNotifications}
+        notificationsOpen={notificationsOpen}
+      />
+      <NotificationsPanel
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        dims={dims}
       />
       <MainArea $radius={dims.borderRadius}>
         <Header
@@ -105,6 +117,8 @@ export default function Page() {
           dims={dims}
           onToggleAssistant={toggleAssistant}
           assistantOpen={assistantOpen}
+          onToggleNotifications={toggleNotifications}
+          notificationsOpen={notificationsOpen}
         />
         <ContentRow>
           <MainContent

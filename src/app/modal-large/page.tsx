@@ -10,6 +10,7 @@ import AssistantPanel from "@/components/AssistantPanel";
 import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
 import { icons } from "@/lib/icons";
 import AccessibilityModal from "@/components/AccessibilityModal";
+import NotificationsPanel from "@/components/NotificationsPanel";
 
 const ShellContainer = styled.div<{
   $gap: number;
@@ -231,6 +232,7 @@ export default function ModalLargePage() {
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
   const [a11yOpen, setA11yOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(true);
   const dims = getMergedDims(variant, colorMode);
   const isDark = colorMode === "dark" || variant === "floating";
@@ -244,6 +246,10 @@ export default function ModalLargePage() {
 
   const toggleAssistant = useCallback(
     () => setAssistantOpen((p) => !p),
+    []
+  );
+  const toggleNotifications = useCallback(
+    () => setNotificationsOpen((p) => !p),
     []
   );
 
@@ -293,6 +299,13 @@ export default function ModalLargePage() {
           colorMode={colorMode}
           dims={dims}
           onOpenAssistant={() => setAssistantOpen(true)}
+          onToggleNotifications={toggleNotifications}
+          notificationsOpen={notificationsOpen}
+        />
+        <NotificationsPanel
+          open={notificationsOpen}
+          onClose={() => setNotificationsOpen(false)}
+          dims={dims}
         />
         <MainArea $radius={dims.borderRadius}>
           <Header
@@ -300,6 +313,8 @@ export default function ModalLargePage() {
             dims={dims}
             onToggleAssistant={toggleAssistant}
             assistantOpen={assistantOpen}
+            onToggleNotifications={toggleNotifications}
+            notificationsOpen={notificationsOpen}
           />
           <ContentRow>
             <div style={{ flex: 1, overflow: "auto" }}>

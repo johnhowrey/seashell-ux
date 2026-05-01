@@ -6,6 +6,7 @@ import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import AssistantPanel from "@/components/AssistantPanel";
+import NotificationsPanel from "@/components/NotificationsPanel";
 import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
 
 /* ── Shell layout (mirrored from main page) ── */
@@ -217,11 +218,16 @@ export default function InferencePage() {
   const [variant] = useState<ShellVariant>("standard");
   const [colorMode] = useState<ColorMode>("digitalocean");
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const dims = getMergedDims(variant, colorMode);
 
   const toggleAssistant = useCallback(
     () => setAssistantOpen((p) => !p),
+    []
+  );
+  const toggleNotifications = useCallback(
+    () => setNotificationsOpen((p) => !p),
     []
   );
 
@@ -240,6 +246,13 @@ export default function InferencePage() {
         colorMode={colorMode}
         dims={dims}
         onOpenAssistant={() => setAssistantOpen(true)}
+        onToggleNotifications={toggleNotifications}
+        notificationsOpen={notificationsOpen}
+      />
+      <NotificationsPanel
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+        dims={dims}
       />
       <MainArea $radius={dims.borderRadius}>
         <Header
@@ -247,6 +260,8 @@ export default function InferencePage() {
           dims={dims}
           onToggleAssistant={toggleAssistant}
           assistantOpen={assistantOpen}
+          onToggleNotifications={toggleNotifications}
+          notificationsOpen={notificationsOpen}
         />
         <ContentRow>
           <PageContent $bg={dims.contentBg} $text={dims.textPrimary}>
