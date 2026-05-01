@@ -218,6 +218,26 @@ const DOLogoSVG = (
   </LogoMark>
 );
 
+// Sidebar navigation links — top-level icon + flyout sub-items
+const NAV_LINKS: Record<string, string> = {
+  "AI Starter Kit": "/home",
+  "Inference Hub": "/playground",
+  Compute: "/droplets",
+  Databases: "/database/create",
+};
+
+const SUB_LINKS: Record<string, string> = {
+  Droplets: "/droplets",
+  "GPU Droplets": "/droplets",
+  "Inference Overview": "/playground",
+  "Managed Database": "/database/create",
+  "Inference Endpoints": "/playground",
+};
+
+function navigate(href: string) {
+  if (typeof window !== "undefined") window.location.href = href;
+}
+
 export default function Sidebar({
   variant,
   colorMode: _colorMode,
@@ -226,6 +246,7 @@ export default function Sidebar({
   onToggleNotifications,
   notificationsOpen,
 }: SidebarProps) {
+  void onOpenAssistant;
   const [activeItem, setActiveItem] = useState(navItems[1]?.label ?? "Inference Hub");
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [hoveredTop, setHoveredTop] = useState(0);
@@ -243,7 +264,14 @@ export default function Sidebar({
 
   return (
     <Wrap $variant={variant} $dims={dims} $hidden={hidden}>
-      <LogoBlock $headerHeight={dims.headerHeight}>{DOLogoSVG}</LogoBlock>
+      <LogoBlock
+        $headerHeight={dims.headerHeight}
+        onClick={() => navigate("/home")}
+        style={{ cursor: "pointer" }}
+        title="Home"
+      >
+        {DOLogoSVG}
+      </LogoBlock>
 
       <NavScroll
         onMouseLeave={() => setHoveredItem(null)}
@@ -255,7 +283,11 @@ export default function Sidebar({
             $dims={dims}
             $active={activeItem === item.label}
             type="button"
-            onClick={() => setActiveItem(item.label)}
+            onClick={() => {
+              setActiveItem(item.label);
+              const href = NAV_LINKS[item.label];
+              if (href) navigate(href);
+            }}
             onMouseEnter={(e) => onEnter(item.label, e.currentTarget)}
             title={item.label}
           >
@@ -265,11 +297,19 @@ export default function Sidebar({
 
         {hovered && hovered.items.length > 0 && (
           <Flyout $top={hoveredTop}>
-            {hovered.items.map((sub) => (
-              <FlyoutItem key={sub} type="button">
-                {sub}
-              </FlyoutItem>
-            ))}
+            {hovered.items.map((sub) => {
+              const href = SUB_LINKS[sub];
+              return (
+                <FlyoutItem
+                  key={sub}
+                  type="button"
+                  onClick={() => href && navigate(href)}
+                  style={{ cursor: href ? "pointer" : "default" }}
+                >
+                  {sub}
+                </FlyoutItem>
+              );
+            })}
           </Flyout>
         )}
       </NavScroll>

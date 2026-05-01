@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import styled from "styled-components";
 import {
   ShellDims,
@@ -15,7 +16,8 @@ interface DimProps {
 }
 
 /* Notifications panel OVERLAYS content (matches live).
-   Gutter has zero width; Panel is absolute and slides in from left. */
+   Gutter has zero width; Panel uses fixed positioning so it can fully
+   leave the viewport when closed (no edge bleeding through). */
 
 const Gutter = styled.div<{ $open: boolean }>`
   position: relative;
@@ -24,14 +26,13 @@ const Gutter = styled.div<{ $open: boolean }>`
   width: 0;
   overflow: visible;
   pointer-events: ${(p) => (p.$open ? "auto" : "none")};
-  z-index: 25;
 `;
 
 const Panel = styled.div<{ $surface: string; $border: string; $open: boolean }>`
-  position: absolute;
+  position: fixed;
   top: 0;
-  left: 0;
-  height: 100%;
+  left: 52px; /* sidebar width — panel sits to the right of sidebar */
+  height: 100vh;
   width: 360px;
   background: ${(p) => p.$surface};
   border-right: 1px solid ${(p) => p.$border};
@@ -39,8 +40,11 @@ const Panel = styled.div<{ $surface: string; $border: string; $open: boolean }>`
     p.$open ? "4px 0 24px rgba(0, 0, 0, 0.08)" : "none"};
   display: flex;
   flex-direction: column;
-  transform: translateX(${(p) => (p.$open ? "0" : "-100%")});
-  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+  transform: translateX(${(p) => (p.$open ? "0" : "-110%")});
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1),
+    visibility 0s linear ${(p) => (p.$open ? "0s" : "0.22s")};
+  visibility: ${(p) => (p.$open ? "visible" : "hidden")};
+  z-index: 40;
 `;
 
 const Head = styled.div<{ $border: string }>`
@@ -234,6 +238,18 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
         <Head $border={dims.borderLight}>
           <Title $dims={dims}>Notifications</Title>
           <HeadActions>
+            <Link
+              href="/notifications"
+              style={{
+                fontFamily: "var(--font-inter), Inter, sans-serif",
+                fontWeight: 500,
+                fontSize: 12,
+                color: dims.accent,
+                textDecoration: "none",
+              }}
+            >
+              View all →
+            </Link>
             <ClearAll $dims={dims} type="button">
               Clear all
             </ClearAll>

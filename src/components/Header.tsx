@@ -697,6 +697,20 @@ const DEFAULT_BREADCRUMBS = [
   "Dashboard",
 ];
 
+const SEGMENT_LINKS: Record<string, string> = {
+  "Acme Corp": "/home",
+  "roadtrip-copilot": "/project",
+  Droplets: "/droplets",
+  Notifications: "/notifications",
+};
+
+const CREATE_LINKS: Record<string, string> = {
+  Droplet: "/droplets",
+  "GPU Droplet": "/droplets",
+  "Managed Database": "/database/create",
+  "1-Click Model": "/playground",
+};
+
 /* ───────────────────────────── Component ───────────────────────────── */
 
 function Header({
@@ -925,6 +939,7 @@ function Header({
         const part = entry.label;
         const isLast = i === breadcrumbs.length - 1;
         const popover = breadcrumbPopovers[part];
+        const linkTo = SEGMENT_LINKS[part];
         const expanded = openCrumb === i;
         const wide = !!(popover && (popover.sections[0]?.items.length ?? 0) > 5);
         return (
@@ -936,9 +951,15 @@ function Header({
               $expanded={expanded}
               type="button"
               title={part}
-              onClick={() => {
-                if (!popover) return;
-                setOpenCrumb(expanded ? null : i);
+              onClick={(e) => {
+                if (popover) {
+                  setOpenCrumb(expanded ? null : i);
+                  return;
+                }
+                if (linkTo && !isLast) {
+                  e.preventDefault();
+                  window.location.href = linkTo;
+                }
               }}
               aria-haspopup={popover ? "menu" : undefined}
               aria-expanded={expanded || undefined}
@@ -952,6 +973,18 @@ function Header({
             )}
             {expanded && popover && (
               <BluePopover $wide={wide} role="menu">
+                {linkTo && (
+                  <BlueItem
+                    type="button"
+                    onClick={() => {
+                      setOpenCrumb(null);
+                      window.location.href = linkTo;
+                    }}
+                    style={{ borderBottom: "1px solid rgba(255,255,255,0.25)" }}
+                  >
+                    <BlueItemLabel>↗ Go to {part} home</BlueItemLabel>
+                  </BlueItem>
+                )}
                 {popover.sections.map((sec, si) => (
                   <React.Fragment key={sec.title}>
                     <BlueSectionHead
@@ -1061,21 +1094,25 @@ function Header({
                   left: `${flyoutLeft}px`,
                 }}
               >
-                {activeCategory.items.map((item) => (
-                  <SubItem
-                    key={item.label}
-                    type="button"
-                    onClick={() => {
-                      setCreateOpen(false);
-                      setCreateCat(null);
-                    }}
-                  >
-                    <SubItemLabel>{item.label}</SubItemLabel>
-                    {item.badge && (
-                      <Badge $variant={item.badge}>{item.badge}</Badge>
-                    )}
-                  </SubItem>
-                ))}
+                {activeCategory.items.map((item) => {
+                  const href = CREATE_LINKS[item.label];
+                  return (
+                    <SubItem
+                      key={item.label}
+                      type="button"
+                      onClick={() => {
+                        setCreateOpen(false);
+                        setCreateCat(null);
+                        if (href) window.location.href = href;
+                      }}
+                    >
+                      <SubItemLabel>{item.label}</SubItemLabel>
+                      {item.badge && (
+                        <Badge $variant={item.badge}>{item.badge}</Badge>
+                      )}
+                    </SubItem>
+                  );
+                })}
               </FlyoutPanel>
             )}
           </>

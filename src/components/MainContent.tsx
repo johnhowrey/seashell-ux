@@ -517,6 +517,12 @@ const demoTiles: { label: string; href: string; swatch: string }[] = [
   { label: "Small Modal", href: "/modal-small", swatch: "#bbf7d0" },
   { label: "Big Modal", href: "/modal-large", swatch: "#fde68a" },
   { label: "Create Database", href: "/database/create", swatch: "#fecaca" },
+  { label: "Workspace Home", href: "/home", swatch: "#a7f3d0" },
+  { label: "Project Home", href: "/project", swatch: "#c7d2fe" },
+  { label: "Droplets List", href: "/droplets", swatch: "#bfdbfe" },
+  { label: "Droplet Detail", href: "/droplets/web-prod-1", swatch: "#bae6fd" },
+  { label: "Onboarding", href: "/onboarding", swatch: "#fde68a" },
+  { label: "Notifications Center", href: "/notifications", swatch: "#fbcfe8" },
 ];
 
 /* ─── Component ─── */
