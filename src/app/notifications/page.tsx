@@ -939,8 +939,8 @@ const InboxQueue: React.FC<InboxQueueProps> = ({ dims, isDark }) => {
           {handledCount + total}.
         </InboxLeadH>
         <InboxLead $color={dims.textSecondary}>
-          {total} need a yes from you, then you&rsquo;re done — about 30
-          seconds each.
+          {total}{" "}
+          need a yes from you, then you&rsquo;re done — about 30 seconds each.
         </InboxLead>
         <div
           style={{
