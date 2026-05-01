@@ -148,6 +148,7 @@ const NavLabel = styled.span<{ $color: string }>`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: left;
   flex: 1;
   min-width: 0;
 `;
@@ -360,8 +361,11 @@ export default function Sidebar({
           </NavItemRow>
         ))}
 
-        {hovered && hovered.items.length > 0 && !expanded && (
-          <Flyout $top={hoveredTop} $left={dims.sidebarCollapsed}>
+        {hovered && hovered.items.length > 0 && (
+          <Flyout
+            $top={hoveredTop}
+            $left={expanded ? dims.sidebarOpen : dims.sidebarCollapsed}
+          >
             {hovered.items.map((sub) => {
               const href = SUB_LINKS[sub];
               return (
