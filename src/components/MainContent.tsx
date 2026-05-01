@@ -466,16 +466,36 @@ interface ColorPreviewProps {
 function ColorPreviewArt({ m }: ColorPreviewProps) {
   const cm = colorModes[m];
   const isDark = m === "dark";
-  const shellBg = isDark ? "#0e0e14" : "#e3e3e3";
+
+  // Distinct outer canvas color so the mini-shell card stands out.
+  const wrapperBg = isDark ? "#0a0a12" : m === "light" ? "#cfd4dc" : "#cdd5e2";
   const sidebarBg = isDark ? "#242428" : "#ffffff";
   const mainBg = cm.bg;
-  const headerBg = isDark ? "#242428" : "#f5f5f5";
-  const cardBg = isDark ? "#2a2a30" : "#f0f0f0";
+  const headerBg = isDark ? "#2c2c34" : "#eef0f3";
+  const cardBg = isDark ? "#34343c" : "#e9ecf0";
+  const shellBorder = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)";
 
   return (
-    <VariantPreview $bg={isDark ? "#1a1a2e" : "#f5f5f5"}>
-      <MiniShell $variant="standard" $bg={shellBg}>
-        <MiniSidebar $bg={sidebarBg} $variant="standard" />
+    <VariantPreview $bg={wrapperBg}>
+      <MiniShell
+        $variant="standard"
+        $bg={mainBg}
+        style={{
+          border: `1px solid ${shellBorder}`,
+          boxShadow: isDark
+            ? "0 1px 3px rgba(0,0,0,0.4)"
+            : "0 1px 3px rgba(0,0,0,0.06)",
+        }}
+      >
+        <MiniSidebar $bg={sidebarBg} $variant="standard">
+          <span
+            style={{
+              display: "block",
+              height: "22%",
+              background: cm.accent,
+            }}
+          />
+        </MiniSidebar>
         <MiniMain $bg={mainBg} $variant="standard">
           <MiniHeader $bg={headerBg} />
           <MiniContent>
