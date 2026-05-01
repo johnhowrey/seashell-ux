@@ -140,6 +140,21 @@ const WelcomeSub = styled.p<DimProps>`
   margin: 0;
 `;
 
+const GetStartedLink = styled.a<DimProps>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${({ $dims }) => $dims.accent};
+  cursor: pointer;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const PromptStack = styled.div`
   display: flex;
   flex-direction: column;
@@ -296,9 +311,12 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
       {/* Body */}
       <Body $dims={dims}>
         <WelcomeHeading $dims={dims}>
-          👋 I&rsquo;m your AI Assistant
+          👋 I&rsquo;m your DigitalOcean AI Assistant.
         </WelcomeHeading>
         <WelcomeSub $dims={dims}>What can I help you with?</WelcomeSub>
+        <GetStartedLink $dims={dims} role="button" tabIndex={0}>
+          Get started →
+        </GetStartedLink>
 
         <PromptStack>
           {SUGGESTED_PROMPTS.map((prompt) => (
@@ -329,7 +347,7 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
         </TextareaWrapper>
         <Disclaimer $dims={dims}>
           Powered by OpenAI GPT-4o. By using this copilot, you agree to share
-          data with it. Do not share sensitive information.
+          your data with it. Do not share sensitive information.
         </Disclaimer>
       </Footer>
     </Wrapper>

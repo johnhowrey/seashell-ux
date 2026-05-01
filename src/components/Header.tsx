@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import styled from "styled-components";
+import React, { useEffect, useRef, useState } from "react";
+import styled, { css } from "styled-components";
 import { ShellVariant, ShellDims } from "../lib/theme";
 import { icons } from "../lib/icons";
 
@@ -10,228 +10,370 @@ interface HeaderProps {
   dims: ShellDims;
   onToggleAssistant: () => void;
   assistantOpen: boolean;
+  onBack?: () => void;
+  breadcrumbs?: string[];
 }
 
-interface TransientProps {
+interface HasDims {
   $variant: ShellVariant;
   $dims: ShellDims;
-  $active?: boolean;
 }
 
-const Wrapper = styled.header<TransientProps>`
+/* ───────────────────────────── Container ───────────────────────────── */
+
+const Container = styled.header<HasDims>`
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: ${({ $dims }) => $dims.headerHeight}px;
-  background: ${({ $dims }) => $dims.headerBg};
-  border-bottom: 1px solid ${({ $dims }) => $dims.borderLight};
-  padding: 0 16px;
-  z-index: 10;
-  transition: background 0.15s ease;
-  position: relative;
+  padding-left: 20px;
   flex-shrink: 0;
+  background: ${({ $variant, $dims }) =>
+    $variant === "zen" ? $dims.accent : $dims.headerBg};
+  border-bottom: ${({ $variant, $dims }) =>
+    $variant === "floating" ? "none" : `1px solid ${$dims.borderLight}`};
+  position: relative;
+  z-index: 10;
 
   ${({ $variant, $dims }) =>
     $variant === "floating" &&
-    `
-    border-radius: ${$dims.borderRadius}px;
-    margin: ${$dims.gap}px ${$dims.gap}px 0 ${$dims.gap}px;
-    border-bottom: none;
-    border: 1px solid ${$dims.borderLight};
-  `}
+    css`
+      border-radius: ${$dims.borderRadius}px;
+      margin: ${$dims.gap}px ${$dims.gap}px 0 ${$dims.gap}px;
+      border: 1px solid ${$dims.borderLight};
+      overflow: hidden;
+    `}
 `;
 
-const LeftSection = styled.div`
+/* ──────────────────────────── Breadcrumbs ──────────────────────────── */
+
+const BreadcrumbWrap = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 1;
+  flex: 1;
   min-width: 0;
   overflow: hidden;
 `;
 
-const BreadcrumbPart = styled.span<{ $muted?: boolean; $variant: ShellVariant; $dims: ShellDims }>`
-  font-size: 13px;
-  white-space: nowrap;
-  color: ${({ $muted, $variant, $dims }) => {
-    if ($variant === "zen") return $muted ? "rgba(255,255,255,0.65)" : "#ffffff";
-    return $muted ? $dims.textMuted : $dims.textPrimary;
-  }};
-  font-weight: ${({ $muted }) => ($muted ? 400 : 500)};
-`;
-
-const ChevronSep = styled.span<{ $variant: ShellVariant }>`
-  display: flex;
-  align-items: center;
-  color: ${({ $variant }) => ($variant === "zen" ? "rgba(255,255,255,0.4)" : "#bbbbbb")};
-  flex-shrink: 0;
-`;
-
-const CenterSection = styled.div`
+const BackButton = styled.button<HasDims>`
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  min-width: 0;
-  padding: 0 16px;
-`;
-
-const SearchWrap = styled.div<TransientProps>`
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-width: 200px;
-  max-width: 400px;
-  width: 100%;
-`;
-
-const SearchIcon = styled.span<{ $variant: ShellVariant }>`
-  position: absolute;
-  left: 10px;
-  display: flex;
-  align-items: center;
-  color: ${({ $variant }) => ($variant === "zen" ? "rgba(255,255,255,0.6)" : "#999999")};
-  pointer-events: none;
-`;
-
-const SearchInput = styled.input<TransientProps>`
-  width: 100%;
-  height: ${({ $dims }) => ($dims.headerHeight <= 34 ? 26 : 32)}px;
-  border: 1px solid
-    ${({ $variant, $dims }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.3)" : $dims.borderLight};
-  border-radius: 6px;
-  padding: 0 12px 0 32px;
-  font-size: 13px;
-  background: ${({ $variant }) =>
-    $variant === "zen" ? "rgba(255,255,255,0.1)" : "transparent"};
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 8px;
+  flex-shrink: 0;
   color: ${({ $variant, $dims }) =>
     $variant === "zen" ? "#ffffff" : $dims.textPrimary};
-  outline: none;
-  transition: border-color 0.15s ease;
+  transition: opacity 0.1s ease;
 
-  &::placeholder {
-    color: ${({ $variant }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.6)" : "#999999"};
-  }
-
-  &:focus {
-    border-color: ${({ $variant, $dims }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.6)" : $dims.accent};
+  &:hover {
+    opacity: 0.65;
   }
 `;
 
-const RightSection = styled.div`
+const CrumbTrail = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+`;
+
+const CrumbGroup = styled.div`
+  display: flex;
+  align-items: center;
+  min-width: 0;
+`;
+
+const Segment = styled.button<HasDims & { $active: boolean }>`
+  display: block;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  transition: max-width 0.15s ease, color 0.1s ease;
+
+  ${({ $active, $variant, $dims }) =>
+    $active
+      ? css`
+          color: ${$variant === "zen" ? "#ffffff" : $dims.textPrimary};
+          max-width: none;
+          flex-shrink: 0;
+        `
+      : css`
+          color: ${$variant === "zen"
+            ? "rgba(255,255,255,0.7)"
+            : "#878787"};
+          max-width: 68px;
+          flex-shrink: 1;
+          &:hover {
+            color: ${$variant === "zen" ? "#ffffff" : $dims.textPrimary};
+          }
+        `}
+`;
+
+const Separator = styled.span<HasDims>`
+  color: ${({ $variant }) =>
+    $variant === "zen" ? "rgba(255,255,255,0.55)" : "#878787"};
+  font-size: 13px;
+  font-weight: 400;
+  margin: 0 6px;
+  user-select: none;
   flex-shrink: 0;
 `;
 
-const CreateButton = styled.button<TransientProps>`
+/* ────────────────────────────── Actions ────────────────────────────── */
+
+const Actions = styled.div<HasDims>`
+  display: flex;
+  align-items: stretch;
+  height: ${({ $dims }) => $dims.headerHeight}px;
+  flex-shrink: 0;
+`;
+
+const CreateButton = styled.button<HasDims>`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  background: ${({ $variant, $dims }) =>
-    $variant === "zen" ? "rgba(255,255,255,0.2)" : $dims.createBg};
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 6px;
+  height: 100%;
+  padding: 0 16px;
+  background: ${({ $variant }) =>
+    $variant === "zen" ? "rgba(255,255,255,0.16)" : "#00879b"};
   border: none;
+  color: #ffffff;
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s ease;
 
   &:hover {
-    background: ${({ $variant, $dims }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.3)" : $dims.createHover};
+    background: ${({ $variant }) =>
+      $variant === "zen" ? "rgba(255,255,255,0.24)" : "#00707f"};
   }
 `;
 
-const AssistantButton = styled.button<TransientProps & { $active: boolean }>`
+const SearchWrap = styled.div<HasDims>`
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  background: ${({ $variant, $dims }) =>
+    $variant === "zen"
+      ? "rgba(255,255,255,0.1)"
+      : $dims.surfaceBg};
+  min-width: 200px;
+  border-left: 1px solid
+    ${({ $variant, $dims }) =>
+      $variant === "zen" ? "rgba(255,255,255,0.2)" : $dims.borderLight};
+  border-right: 1px solid
+    ${({ $variant, $dims }) =>
+      $variant === "zen" ? "rgba(255,255,255,0.2)" : $dims.borderLight};
+`;
+
+const SearchIcon = styled.span<HasDims>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  background: ${({ $active, $variant, $dims }) => {
-    if ($active) {
-      return $variant === "zen" ? "rgba(255,255,255,0.25)" : `${$dims.accent}14`;
-    }
-    return "transparent";
-  }};
-  color: ${({ $active, $variant, $dims }) => {
-    if ($variant === "zen") return $active ? "#ffffff" : "rgba(255,255,255,0.7)";
-    return $active ? $dims.accent : $dims.textMuted;
-  }};
-  transition: background 0.15s ease, color 0.15s ease;
+  padding-left: 16px;
+  flex-shrink: 0;
+  color: ${({ $variant }) =>
+    $variant === "zen" ? "rgba(255,255,255,0.7)" : "#999999"};
+`;
 
-  &:hover {
-    background: ${({ $variant, $dims }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.15)" : `${$dims.accent}0a`};
+const SearchInput = styled.input<HasDims>`
+  width: 100%;
+  height: 100%;
+  padding: 0 16px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: ${({ $variant, $dims }) =>
+    $variant === "zen" ? "#ffffff" : $dims.textPrimary};
+
+  &::placeholder {
+    color: ${({ $variant, $dims }) =>
+      $variant === "zen" ? "rgba(255,255,255,0.7)" : $dims.textMuted};
+    font-weight: 500;
   }
 `;
 
-const breadcrumbParts = [
+const AssistantButton = styled.button<HasDims & { $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 16px;
+  width: auto;
+  overflow: hidden;
+  border: none;
+  color: #ffffff;
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  background: linear-gradient(
+    17.61deg,
+    rgb(0, 12, 121) 5.31%,
+    rgb(10, 78, 235) 26.68%,
+    rgb(0, 105, 255) 48.05%,
+    rgb(198, 174, 255) 96.08%
+  );
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+
+  ${({ $active }) =>
+    $active &&
+    css`
+      filter: brightness(1.1);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+    `}
+`;
+
+const KeyHint = styled.span`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  opacity: 0.55;
+  margin-left: 2px;
+`;
+
+/* ───────────────────────────── Component ───────────────────────────── */
+
+const DEFAULT_BREADCRUMBS = [
   "Acme Corp",
   "Platform Engineering",
   "roadtrip-copilot",
   "Dashboard",
 ];
 
-function Header({ variant, dims, onToggleAssistant, assistantOpen }: HeaderProps) {
-  return (
-    <Wrapper $variant={variant} $dims={dims}>
-      <LeftSection>
-        {breadcrumbParts.map((part, i) => (
-          <React.Fragment key={part}>
-            {i > 0 && (
-              <ChevronSep $variant={variant}>{icons.chevronRight}</ChevronSep>
-            )}
-            <BreadcrumbPart
-              $muted={i < breadcrumbParts.length - 1}
-              $variant={variant}
-              $dims={dims}
-            >
-              {part}
-            </BreadcrumbPart>
-          </React.Fragment>
-        ))}
-      </LeftSection>
+function Header({
+  variant,
+  dims,
+  onToggleAssistant,
+  assistantOpen,
+  onBack,
+  breadcrumbs = DEFAULT_BREADCRUMBS,
+}: HeaderProps) {
+  const searchRef = useRef<HTMLInputElement>(null);
+  const [isMac, setIsMac] = useState(true);
 
-      <CenterSection>
+  useEffect(() => {
+    const mac =
+      typeof navigator !== "undefined" &&
+      /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent);
+    setIsMac(mac);
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const key = e.key.toLowerCase();
+      if (key === "k") {
+        e.preventDefault();
+        onToggleAssistant();
+      } else if (key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onToggleAssistant]);
+
+  const cmd = isMac ? "⌘" : "Ctrl+";
+
+  return (
+    <Container $variant={variant} $dims={dims}>
+      <BreadcrumbWrap>
+        <BackButton
+          $variant={variant}
+          $dims={dims}
+          aria-label="Go back"
+          onClick={() => onBack?.()}
+        >
+          {icons.arrowLeft}
+        </BackButton>
+        <CrumbTrail>
+          {breadcrumbs.map((part, i) => {
+            const isLast = i === breadcrumbs.length - 1;
+            return (
+              <CrumbGroup key={`${part}-${i}`}>
+                <Segment
+                  $variant={variant}
+                  $dims={dims}
+                  $active={isLast}
+                  type="button"
+                  title={part}
+                >
+                  {part}
+                </Segment>
+                {!isLast && (
+                  <Separator $variant={variant} $dims={dims} aria-hidden>
+                    /
+                  </Separator>
+                )}
+              </CrumbGroup>
+            );
+          })}
+        </CrumbTrail>
+      </BreadcrumbWrap>
+
+      <Actions $variant={variant} $dims={dims}>
+        <CreateButton $variant={variant} $dims={dims} type="button">
+          {icons.plusBold}
+          Create
+        </CreateButton>
         <SearchWrap $variant={variant} $dims={dims}>
-          <SearchIcon $variant={variant}>{icons.search}</SearchIcon>
+          <SearchIcon $variant={variant} $dims={dims} aria-hidden>
+            {icons.searchSm}
+          </SearchIcon>
           <SearchInput
+            ref={searchRef}
             $variant={variant}
             $dims={dims}
             type="text"
-            placeholder="Search resources..."
+            placeholder="Search..."
+            aria-label="Search"
           />
         </SearchWrap>
-      </CenterSection>
-
-      <RightSection>
-        <CreateButton $variant={variant} $dims={dims}>
-          {icons.plus}
-          Create
-        </CreateButton>
         <AssistantButton
           $variant={variant}
           $dims={dims}
           $active={assistantOpen}
+          type="button"
           onClick={onToggleAssistant}
-          aria-label="Toggle assistant"
+          aria-label={`AI Assistant (${cmd}K)`}
+          title={`AI Assistant (${cmd}K)`}
         >
-          {icons.assistant}
+          {icons.sparkles}
+          AI Assistant
+          <KeyHint>{cmd}K</KeyHint>
         </AssistantButton>
-      </RightSection>
-    </Wrapper>
+      </Actions>
+    </Container>
   );
 }
 

@@ -14,31 +14,46 @@ html, body {
   overflow: hidden;
 }
 
-html[data-reduce-motion] *, html[data-reduce-motion] *::before, html[data-reduce-motion] *::after {
+html[data-reduce-motion],
+html[data-reduce-motion] *,
+html[data-reduce-motion] *::before,
+html[data-reduce-motion] *::after {
   transition-duration: 0.001ms !important;
+  transition-delay: 0ms !important;
   animation-duration: 0.001ms !important;
+  animation-delay: 0ms !important;
   animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
 }
 
-html[data-high-contrast] {
-  filter: contrast(1.3);
+html[data-high-contrast] body {
+  filter: contrast(1.4) saturate(1.15);
 }
 
-html[data-dyslexia-font] *:not([data-icon]) {
-  font-family: "Open Dyslexic", OpenDyslexic, sans-serif !important;
+html[data-dyslexia-font],
+html[data-dyslexia-font] body,
+html[data-dyslexia-font] *:not(svg):not(svg *) {
+  font-family: "Open Dyslexic", OpenDyslexic, "Inter", sans-serif !important;
+  letter-spacing: 0.01em;
 }
 
 html[data-large-text] {
   font-size: 120%;
 }
+html[data-large-text] body {
+  font-size: inherit;
+}
 
 html[data-enhanced-focus] *:focus-visible {
   outline-offset: 3px !important;
   outline: 3px solid #0f62fe !important;
-  box-shadow: 0 0 0 6px rgba(15, 98, 254, 0.25) !important;
+  box-shadow: 0 0 0 6px rgba(15, 98, 254, 0.3) !important;
+  border-radius: 4px;
 }
 
-html[data-underline-links] a {
+html[data-underline-links] a,
+html[data-underline-links] a:visited {
   text-underline-offset: 2px;
   text-decoration: underline !important;
+  text-decoration-thickness: 1px;
 }

@@ -14,6 +14,8 @@ import {
   colorModes,
   ShellDims,
 } from "@/lib/theme";
+import { icons } from "@/lib/icons";
+import AccessibilityModal from "@/components/AccessibilityModal";
 
 const ShellContainer = styled.div<{
   $gap: number;
@@ -56,153 +58,119 @@ const ContentRow = styled.div`
 
 const Backdrop = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 32px;
 `;
 
-const ModalBox = styled.div`
-  width: 640px;
-  background: #ffffff;
+const ModalBox = styled.div<{ $surface: string; $border: string }>`
+  width: 760px;
+  max-width: 100%;
+  max-height: calc(100vh - 64px);
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const ModalHeader = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  gap: 12px;
+  padding: 22px 24px 8px;
 `;
 
-const ModalTitle = styled.h2`
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
+const ModalHeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
 `;
 
-const CloseButton = styled.button`
+const HeaderSwatch = styled.span<{ $color: string }>`
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: ${(p) => p.$color};
+  flex-shrink: 0;
+`;
+
+const HeaderText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const CloseButton = styled.button<{ $color: string; $hover: string }>`
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: #999999;
-  font-size: 18px;
-  line-height: 1;
+  color: ${(p) => p.$color};
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
 
   &:hover {
-    color: #555555;
+    color: ${(p) => p.$hover};
   }
 `;
 
 const ModalBody = styled.div`
-  padding: 24px;
+  padding: 8px 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  overflow-y: auto;
 `;
 
-const FieldGroup = styled.div`
+const SkeletonGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 `;
 
-const Label = styled.label`
-  font-size: 13px;
-  font-weight: 600;
-  color: #1a1a1a;
+const SkeletonBar = styled.span<{ $w: string; $h: number; $color: string }>`
+  display: block;
+  width: ${(p) => p.$w};
+  height: ${(p) => p.$h}px;
+  border-radius: 4px;
+  background: ${(p) => p.$color};
 `;
 
-const TextInput = styled.input`
-  padding: 8px 12px;
-  font-size: 13px;
-  color: #1a1a1a;
-  background: #ffffff;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  outline: none;
-
-  &:focus {
-    border-color: #0f62fe;
-    box-shadow: 0 0 0 2px rgba(15, 98, 254, 0.15);
-  }
-
-  &::placeholder {
-    color: #999999;
-  }
+const CardRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 `;
 
-const Select = styled.select`
-  padding: 8px 12px;
-  font-size: 13px;
-  color: #1a1a1a;
-  background: #ffffff;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  outline: none;
-  cursor: pointer;
-
-  &:focus {
-    border-color: #0f62fe;
-    box-shadow: 0 0 0 2px rgba(15, 98, 254, 0.15);
-  }
-`;
-
-const RadioGroup = styled.div`
+const CardSkel = styled.div<{ $color: string }>`
+  background: ${(p) => p.$color};
+  border-radius: 8px;
+  height: 160px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 8px;
 `;
 
-const RadioLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #1a1a1a;
-  cursor: pointer;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: #bbb;
-  }
-
-  input:checked + & {
-    border-color: #0f62fe;
-  }
-`;
-
-const RadioInput = styled.input`
-  accent-color: #0f62fe;
+const Divider = styled.hr<{ $border: string }>`
+  border: none;
+  border-top: 1px solid ${(p) => p.$border};
   margin: 0;
-`;
-
-const RadioText = styled.span`
-  flex: 1;
-`;
-
-const RadioPrice = styled.span`
-  font-size: 12px;
-  color: #999999;
-  font-weight: 500;
 `;
 
 const ModalFooter = styled.div`
@@ -210,38 +178,42 @@ const ModalFooter = styled.div`
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  padding: 16px 24px;
-  border-top: 1px solid #e0e0e0;
+  padding: 14px 24px 22px;
 `;
 
-const GhostButton = styled.button`
-  padding: 8px 16px;
+const GhostButton = styled.button<{
+  $border: string;
+  $color: string;
+  $hoverBg: string;
+}>`
+  padding: 8px 18px;
   font-size: 13px;
   font-weight: 500;
-  color: #555555;
+  color: ${(p) => p.$color};
   background: none;
-  border: 1px solid #d0d0d0;
+  border: 1px solid ${(p) => p.$border};
   border-radius: 6px;
   cursor: pointer;
+  font-family: inherit;
 
   &:hover {
-    background: #f5f5f5;
-    border-color: #bbb;
+    background: ${(p) => p.$hoverBg};
   }
 `;
 
-const AccentButton = styled.button<{ $accent: string; $accentHover: string }>`
-  padding: 8px 16px;
+const ConfirmButton = styled.button<{ $bg: string; $color: string; $hover: string }>`
+  padding: 8px 20px;
   font-size: 13px;
-  font-weight: 500;
-  color: #ffffff;
-  background: ${(p) => p.$accent};
+  font-weight: 600;
+  color: ${(p) => p.$color};
+  background: ${(p) => p.$bg};
   border: 1px solid transparent;
   border-radius: 6px;
   cursor: pointer;
+  font-family: inherit;
 
   &:hover {
-    background: ${(p) => p.$accentHover};
+    background: ${(p) => p.$hover};
   }
 `;
 
@@ -283,12 +255,20 @@ function getMergedDims(
 
 export default function ModalLargePage() {
   const [variant, setVariant] = useState<ShellVariant>("standard");
-  const [colorMode, setColorMode] = useState<ColorMode>("default");
+  const [colorMode, setColorMode] = useState<ColorMode>("digitalocean");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState("basic");
-
+  const [a11yOpen, setA11yOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(true);
   const dims = getMergedDims(variant, colorMode);
+  const isDark = colorMode === "dark" || variant === "floating";
+  const skel = isDark ? "#3a3a44" : "#e6e6ec";
+  const cardSkel = isDark ? "#2c2c34" : "#f1f1f5";
+  const innerSkel = isDark ? "#43434d" : "#dadae2";
+  const hoverBg = isDark ? "rgba(255,255,255,0.06)" : "#f5f5f5";
+  const confirmBg = isDark ? "#ffffff" : "#1a1a1a";
+  const confirmFg = isDark ? "#1a1a1a" : "#ffffff";
+  const confirmHover = isDark ? "#e6e6ec" : "#000000";
 
   const toggleAssistant = useCallback(
     () => setAssistantOpen((p) => !p),
@@ -318,6 +298,17 @@ export default function ModalLargePage() {
     });
   }, [activeA11y]);
 
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModalOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalOpen]);
+
+  const closeModal = () => setModalOpen(false);
+
   return (
     <>
       <ShellContainer
@@ -325,7 +316,12 @@ export default function ModalLargePage() {
         $bg={dims.gap > 0 ? dims.contentBg : "transparent"}
         $radius={dims.borderRadius}
       >
-        <Sidebar variant={variant} colorMode={colorMode} dims={dims} />
+        <Sidebar
+          variant={variant}
+          colorMode={colorMode}
+          dims={dims}
+          onOpenAssistant={() => setAssistantOpen(true)}
+        />
         <MainArea $radius={dims.borderRadius}>
           <Header
             variant={variant}
@@ -344,8 +340,8 @@ export default function ModalLargePage() {
                 dims={dims}
                 onVariantChange={setVariant}
                 onColorModeChange={setColorMode}
-                activeAccessibility={activeA11y}
-                onToggleAccessibility={toggleA11y}
+                onOpenAccessibility={() => setA11yOpen(true)}
+                onOpenAssistant={() => setAssistantOpen(true)}
               />
             </div>
             <AssistantPanel
@@ -357,89 +353,96 @@ export default function ModalLargePage() {
         </MainArea>
       </ShellContainer>
 
-      <Backdrop>
-        <ModalBox>
+      {modalOpen && (
+      <Backdrop
+        onClick={(e) => {
+          if (e.target === e.currentTarget) closeModal();
+        }}
+      >
+        <ModalBox $surface={dims.surfaceBg} $border={dims.borderLight}>
           <ModalHeader>
-            <ModalTitle>Create New Resource</ModalTitle>
-            <CloseButton aria-label="Close modal">&times;</CloseButton>
+            <ModalHeaderLeft>
+              <HeaderSwatch $color="#fcd96b" />
+              <HeaderText>
+                <SkeletonBar $w="44%" $h={10} $color={skel} />
+                <SkeletonBar $w="28%" $h={8} $color={skel} />
+              </HeaderText>
+            </ModalHeaderLeft>
+            <CloseButton
+              aria-label="Close modal"
+              $color={dims.textMuted}
+              $hover={dims.textPrimary}
+              onClick={closeModal}
+              type="button"
+            >
+              {icons.close}
+            </CloseButton>
           </ModalHeader>
           <ModalBody>
-            <FieldGroup>
-              <Label htmlFor="resource-name">Resource Name</Label>
-              <TextInput
-                id="resource-name"
-                type="text"
-                placeholder="my-resource"
-              />
-            </FieldGroup>
-
-            <FieldGroup>
-              <Label htmlFor="region">Region</Label>
-              <Select id="region" defaultValue="nyc1">
-                <option value="nyc1">NYC1</option>
-                <option value="sfo1">SFO1</option>
-                <option value="ams1">AMS1</option>
-                <option value="sgp1">SGP1</option>
-                <option value="lon1">LON1</option>
-              </Select>
-            </FieldGroup>
-
-            <FieldGroup>
-              <Label>Plan</Label>
-              <RadioGroup>
-                <RadioLabel>
-                  <RadioInput
-                    type="radio"
-                    name="plan"
-                    value="basic"
-                    checked={selectedPlan === "basic"}
-                    onChange={() => setSelectedPlan("basic")}
-                  />
-                  <RadioText>Basic</RadioText>
-                  <RadioPrice>$5/mo</RadioPrice>
-                </RadioLabel>
-                <RadioLabel>
-                  <RadioInput
-                    type="radio"
-                    name="plan"
-                    value="general"
-                    checked={selectedPlan === "general"}
-                    onChange={() => setSelectedPlan("general")}
-                  />
-                  <RadioText>General Purpose</RadioText>
-                  <RadioPrice>$40/mo</RadioPrice>
-                </RadioLabel>
-                <RadioLabel>
-                  <RadioInput
-                    type="radio"
-                    name="plan"
-                    value="cpu-optimized"
-                    checked={selectedPlan === "cpu-optimized"}
-                    onChange={() => setSelectedPlan("cpu-optimized")}
-                  />
-                  <RadioText>CPU-Optimized</RadioText>
-                  <RadioPrice>$80/mo</RadioPrice>
-                </RadioLabel>
-              </RadioGroup>
-            </FieldGroup>
-
-            <FieldGroup>
-              <Label htmlFor="tags">Tags</Label>
-              <TextInput
-                id="tags"
-                type="text"
-                placeholder="Add tags..."
-              />
-            </FieldGroup>
+            <SkeletonGroup>
+              <SkeletonBar $w="96%" $h={8} $color={skel} />
+              <SkeletonBar $w="78%" $h={8} $color={skel} />
+              <SkeletonBar $w="32%" $h={8} $color={skel} />
+            </SkeletonGroup>
+            <CardRow>
+              <CardSkel $color={cardSkel}>
+                <SkeletonBar $w="60%" $h={8} $color={innerSkel} />
+                <SkeletonBar $w="40%" $h={8} $color={innerSkel} />
+              </CardSkel>
+              <CardSkel $color={cardSkel}>
+                <SkeletonBar $w="58%" $h={8} $color={innerSkel} />
+                <SkeletonBar $w="36%" $h={8} $color={innerSkel} />
+              </CardSkel>
+            </CardRow>
+            <SkeletonGroup>
+              <SkeletonBar $w="92%" $h={8} $color={skel} />
+              <SkeletonBar $w="80%" $h={8} $color={skel} />
+              <SkeletonBar $w="48%" $h={8} $color={skel} />
+              <SkeletonBar $w="28%" $h={8} $color={skel} />
+            </SkeletonGroup>
+            <CardRow>
+              <CardSkel $color={cardSkel}>
+                <SkeletonBar $w="55%" $h={8} $color={innerSkel} />
+                <SkeletonBar $w="38%" $h={8} $color={innerSkel} />
+              </CardSkel>
+              <CardSkel $color={cardSkel}>
+                <SkeletonBar $w="50%" $h={8} $color={innerSkel} />
+                <SkeletonBar $w="34%" $h={8} $color={innerSkel} />
+              </CardSkel>
+            </CardRow>
           </ModalBody>
+          <Divider $border={dims.borderLight} />
           <ModalFooter>
-            <GhostButton>Cancel</GhostButton>
-            <AccentButton $accent={dims.accent} $accentHover={dims.accentHover}>
-              Create Resource
-            </AccentButton>
+            <GhostButton
+              $border={dims.borderLight}
+              $color={dims.textPrimary}
+              $hoverBg={hoverBg}
+              type="button"
+              onClick={closeModal}
+            >
+              Cancel
+            </GhostButton>
+            <ConfirmButton
+              $bg={confirmBg}
+              $color={confirmFg}
+              $hover={confirmHover}
+              type="button"
+              onClick={closeModal}
+            >
+              Confirm
+            </ConfirmButton>
           </ModalFooter>
         </ModalBox>
       </Backdrop>
+      )}
+      <AccessibilityModal
+        open={a11yOpen}
+        onClose={() => setA11yOpen(false)}
+        dims={dims}
+        isDark={isDark}
+        activeAccessibility={activeA11y}
+        onToggle={toggleA11y}
+      />
     </>
   );
 }

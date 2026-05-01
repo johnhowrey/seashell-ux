@@ -14,6 +14,8 @@ import {
   colorModes,
   ShellDims,
 } from "@/lib/theme";
+import { icons } from "@/lib/icons";
+import AccessibilityModal from "@/components/AccessibilityModal";
 
 const ShellContainer = styled.div<{
   $gap: number;
@@ -56,10 +58,7 @@ const ContentRow = styled.div`
 
 const Backdrop = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.4);
   z-index: 1000;
   display: flex;
@@ -67,55 +66,81 @@ const Backdrop = styled.div`
   justify-content: center;
 `;
 
-const ModalBox = styled.div`
-  width: 400px;
-  background: #ffffff;
+const ModalBox = styled.div<{ $surface: string; $border: string }>`
+  width: 460px;
+  max-width: calc(100vw - 32px);
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   overflow: hidden;
 `;
 
 const ModalHeader = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
+  gap: 12px;
+  padding: 20px 20px 12px;
 `;
 
-const ModalTitle = styled.h2`
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
+const ModalHeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 `;
 
-const CloseButton = styled.button`
+const HeaderSwatch = styled.span<{ $color: string }>`
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: ${(p) => p.$color};
+  flex-shrink: 0;
+`;
+
+const CloseButton = styled.button<{ $color: string; $hover: string }>`
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: #999999;
-  font-size: 18px;
-  line-height: 1;
+  color: ${(p) => p.$color};
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
 
   &:hover {
-    color: #555555;
+    color: ${(p) => p.$hover};
   }
 `;
 
 const ModalBody = styled.div`
-  padding: 20px;
+  padding: 4px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 `;
 
-const BodyText = styled.p`
-  font-size: 13px;
-  color: #555555;
-  line-height: 1.5;
-  margin: 0;
+const SkeletonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const SkeletonBar = styled.span<{ $w: string; $h: number; $color: string }>`
+  display: block;
+  width: ${(p) => p.$w};
+  height: ${(p) => p.$h}px;
+  border-radius: 4px;
+  background: ${(p) => p.$color};
+`;
+
+const Divider = styled.hr<{ $border: string }>`
+  border: none;
+  border-top: 1px solid ${(p) => p.$border};
+  margin: 4px 0;
 `;
 
 const ModalFooter = styled.div`
@@ -123,38 +148,42 @@ const ModalFooter = styled.div`
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  padding: 16px 20px;
-  border-top: 1px solid #e0e0e0;
+  padding: 12px 20px 20px;
 `;
 
-const GhostButton = styled.button`
+const GhostButton = styled.button<{
+  $border: string;
+  $color: string;
+  $hoverBg: string;
+}>`
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 500;
-  color: #555555;
+  color: ${(p) => p.$color};
   background: none;
-  border: 1px solid #d0d0d0;
+  border: 1px solid ${(p) => p.$border};
   border-radius: 6px;
   cursor: pointer;
+  font-family: inherit;
 
   &:hover {
-    background: #f5f5f5;
-    border-color: #bbb;
+    background: ${(p) => p.$hoverBg};
   }
 `;
 
-const AccentButton = styled.button<{ $accent: string; $accentHover: string }>`
-  padding: 8px 16px;
+const ConfirmButton = styled.button<{ $bg: string; $color: string; $hover: string }>`
+  padding: 8px 18px;
   font-size: 13px;
-  font-weight: 500;
-  color: #ffffff;
-  background: ${(p) => p.$accent};
+  font-weight: 600;
+  color: ${(p) => p.$color};
+  background: ${(p) => p.$bg};
   border: 1px solid transparent;
   border-radius: 6px;
   cursor: pointer;
+  font-family: inherit;
 
   &:hover {
-    background: ${(p) => p.$accentHover};
+    background: ${(p) => p.$hover};
   }
 `;
 
@@ -196,11 +225,19 @@ function getMergedDims(
 
 export default function ModalSmallPage() {
   const [variant, setVariant] = useState<ShellVariant>("standard");
-  const [colorMode, setColorMode] = useState<ColorMode>("default");
+  const [colorMode, setColorMode] = useState<ColorMode>("digitalocean");
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [a11yOpen, setA11yOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(true);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
 
   const dims = getMergedDims(variant, colorMode);
+  const isDark = colorMode === "dark" || variant === "floating";
+  const skel = isDark ? "#3a3a44" : "#e6e6ec";
+  const hoverBg = isDark ? "rgba(255,255,255,0.06)" : "#f5f5f5";
+  const confirmBg = isDark ? "#ffffff" : "#1a1a1a";
+  const confirmFg = isDark ? "#1a1a1a" : "#ffffff";
+  const confirmHover = isDark ? "#e6e6ec" : "#000000";
 
   const toggleAssistant = useCallback(
     () => setAssistantOpen((p) => !p),
@@ -230,6 +267,17 @@ export default function ModalSmallPage() {
     });
   }, [activeA11y]);
 
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModalOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalOpen]);
+
+  const closeModal = () => setModalOpen(false);
+
   return (
     <>
       <ShellContainer
@@ -237,7 +285,12 @@ export default function ModalSmallPage() {
         $bg={dims.gap > 0 ? dims.contentBg : "transparent"}
         $radius={dims.borderRadius}
       >
-        <Sidebar variant={variant} colorMode={colorMode} dims={dims} />
+        <Sidebar
+          variant={variant}
+          colorMode={colorMode}
+          dims={dims}
+          onOpenAssistant={() => setAssistantOpen(true)}
+        />
         <MainArea $radius={dims.borderRadius}>
           <Header
             variant={variant}
@@ -256,8 +309,8 @@ export default function ModalSmallPage() {
                 dims={dims}
                 onVariantChange={setVariant}
                 onColorModeChange={setColorMode}
-                activeAccessibility={activeA11y}
-                onToggleAccessibility={toggleA11y}
+                onOpenAccessibility={() => setA11yOpen(true)}
+                onOpenAssistant={() => setAssistantOpen(true)}
               />
             </div>
             <AssistantPanel
@@ -269,25 +322,71 @@ export default function ModalSmallPage() {
         </MainArea>
       </ShellContainer>
 
-      <Backdrop>
-        <ModalBox>
+      {modalOpen && (
+      <Backdrop
+        onClick={(e) => {
+          if (e.target === e.currentTarget) closeModal();
+        }}
+      >
+        <ModalBox $surface={dims.surfaceBg} $border={dims.borderLight}>
           <ModalHeader>
-            <ModalTitle>Confirm Action</ModalTitle>
-            <CloseButton aria-label="Close modal">&times;</CloseButton>
+            <ModalHeaderLeft>
+              <HeaderSwatch $color="#7ee8b6" />
+              <SkeletonBar $w="55%" $h={10} $color={skel} />
+            </ModalHeaderLeft>
+            <CloseButton
+              aria-label="Close modal"
+              $color={dims.textMuted}
+              $hover={dims.textPrimary}
+              onClick={closeModal}
+              type="button"
+            >
+              {icons.close}
+            </CloseButton>
           </ModalHeader>
           <ModalBody>
-            <BodyText>
-              Are you sure you want to proceed? This action cannot be undone.
-            </BodyText>
+            <SkeletonGroup>
+              <SkeletonBar $w="92%" $h={8} $color={skel} />
+              <SkeletonBar $w="78%" $h={8} $color={skel} />
+              <SkeletonBar $w="46%" $h={8} $color={skel} />
+            </SkeletonGroup>
+            <Divider $border={dims.borderLight} />
+            <SkeletonGroup>
+              <SkeletonBar $w="84%" $h={8} $color={skel} />
+              <SkeletonBar $w="62%" $h={8} $color={skel} />
+            </SkeletonGroup>
           </ModalBody>
           <ModalFooter>
-            <GhostButton>Cancel</GhostButton>
-            <AccentButton $accent={dims.accent} $accentHover={dims.accentHover}>
+            <GhostButton
+              $border={dims.borderLight}
+              $color={dims.textPrimary}
+              $hoverBg={hoverBg}
+              type="button"
+              onClick={closeModal}
+            >
+              Cancel
+            </GhostButton>
+            <ConfirmButton
+              $bg={confirmBg}
+              $color={confirmFg}
+              $hover={confirmHover}
+              type="button"
+              onClick={closeModal}
+            >
               Confirm
-            </AccentButton>
+            </ConfirmButton>
           </ModalFooter>
         </ModalBox>
       </Backdrop>
+      )}
+      <AccessibilityModal
+        open={a11yOpen}
+        onClose={() => setA11yOpen(false)}
+        dims={dims}
+        isDark={isDark}
+        activeAccessibility={activeA11y}
+        onToggle={toggleA11y}
+      />
     </>
   );
 }

@@ -1,5 +1,8 @@
 export type ShellVariant = "standard" | "floating" | "compact" | "zen";
-export type ColorMode = "default" | "light" | "dark";
+export type ColorMode = "digitalocean" | "light" | "dark";
+
+export const PRODUCT_NAME = "DigitalOcean";
+export const PRODUCT_LABEL = "DigitalOcean Control Panel";
 
 export interface ShellDims {
   sidebarCollapsed: number;
@@ -127,9 +130,9 @@ export const colorModes: Record<
   ColorMode,
   { name: string; description: string; accent: string; bg: string; surface: string; text: string; border: string }
 > = {
-  default: {
-    name: "Default",
-    description: "Blue branding, teal accents.",
+  digitalocean: {
+    name: "DigitalOcean",
+    description: "Blue branding, teal accents. The signature DO look.",
     accent: "#0f62fe",
     bg: "#ffffff",
     surface: "#ffffff",
@@ -138,7 +141,7 @@ export const colorModes: Record<
   },
   light: {
     name: "Light",
-    description: "Steel blue, airy professional.",
+    description: "Steel blue accents, airy and professional.",
     accent: "#4a6fa5",
     bg: "#f8f9fb",
     surface: "#ffffff",
@@ -147,7 +150,7 @@ export const colorModes: Record<
   },
   dark: {
     name: "Dark",
-    description: "Deep surfaces, soft contrast.",
+    description: "Easy on the eyes. Deep surfaces, soft contrast.",
     accent: "#7c3aed",
     bg: "#1a1a1e",
     surface: "#242428",
@@ -156,13 +159,45 @@ export const colorModes: Record<
   },
 };
 
+export const accessibilityDescriptor = "Motion, contrast, fonts, focus, and more.";
+
 export const accessibilityOptions = [
-  { id: "reduce-motion", label: "Reduce Motion", attr: "data-reduce-motion" },
-  { id: "high-contrast", label: "High Contrast", attr: "data-high-contrast" },
-  { id: "dyslexia-font", label: "Dyslexia-Friendly Font", attr: "data-dyslexia-font" },
-  { id: "large-text", label: "Large Text", attr: "data-large-text" },
-  { id: "enhanced-focus", label: "Enhanced Focus", attr: "data-enhanced-focus" },
-  { id: "underline-links", label: "Underline Links", attr: "data-underline-links" },
+  {
+    id: "reduce-motion",
+    label: "Reduce Motion",
+    description: "Minimize animations and transitions.",
+    attr: "data-reduce-motion",
+  },
+  {
+    id: "high-contrast",
+    label: "High Contrast",
+    description: "Boost contrast for clearer separation.",
+    attr: "data-high-contrast",
+  },
+  {
+    id: "dyslexia-font",
+    label: "Dyslexia-Friendly Font",
+    description: "Switch typography to OpenDyslexic.",
+    attr: "data-dyslexia-font",
+  },
+  {
+    id: "large-text",
+    label: "Large Text",
+    description: "Scale base font size up by 20%.",
+    attr: "data-large-text",
+  },
+  {
+    id: "enhanced-focus",
+    label: "Enhanced Focus",
+    description: "Stronger focus rings on every control.",
+    attr: "data-enhanced-focus",
+  },
+  {
+    id: "underline-links",
+    label: "Underline Links",
+    description: "Always underline hyperlinks for clarity.",
+    attr: "data-underline-links",
+  },
 ];
 
 export const navItems = [

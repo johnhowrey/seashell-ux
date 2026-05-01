@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import type { ShellVariant, ColorMode, ShellDims } from "../lib/theme";
-import { navItems } from "../lib/theme";
+import { navItems, PRODUCT_LABEL } from "../lib/theme";
 import { icons } from "../lib/icons";
 
 /* ------------------------------------------------------------------ */
@@ -60,12 +60,19 @@ const Wrap = styled.aside<SidebarWrapProps>`
   `}
 `;
 
+const LogoRow = styled.div<{ $headerHeight: number }>`
+  display: flex;
+  align-items: stretch;
+  height: ${(p) => p.$headerHeight}px;
+  flex-shrink: 0;
+  overflow: hidden;
+`;
+
 const LogoBlock = styled.div<{ $collapsedW: number }>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: ${(p) => p.$collapsedW}px;
-  height: 52px;
   flex-shrink: 0;
   background: #0f62fe;
 `;
@@ -75,6 +82,28 @@ const LogoShape = styled.div`
   height: 24px;
   background: #ffffff;
   border-radius: 6px;
+`;
+
+const ProductLabel = styled.div<{
+  $expanded: boolean;
+  $color: string;
+  $bg: string;
+}>`
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding: 0 14px;
+  background: ${(p) => p.$bg};
+  font-size: 13px;
+  font-weight: 600;
+  color: ${(p) => p.$color};
+  white-space: nowrap;
+  opacity: ${(p) => (p.$expanded ? 1 : 0)};
+  pointer-events: ${(p) => (p.$expanded ? "auto" : "none")};
+  transition: opacity 0.12s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const NavScroll = styled.div`
@@ -136,11 +165,23 @@ const IconCell = styled.span<{ $collapsedW: number }>`
 `;
 
 const Label = styled.span<{ $expanded: boolean }>`
+  flex: 1;
   opacity: ${(p) => (p.$expanded ? 1 : 0)};
   transition: opacity 0.12s ease;
   pointer-events: ${(p) => (p.$expanded ? "auto" : "none")};
   overflow: hidden;
   text-overflow: ellipsis;
+`;
+
+const Shortcut = styled.span<{ $expanded: boolean; $color: string }>`
+  margin-right: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: ${(p) => p.$color};
+  opacity: ${(p) => (p.$expanded ? 1 : 0)};
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+  flex-shrink: 0;
 `;
 
 const BottomSection = styled.div`
@@ -177,6 +218,7 @@ interface SidebarProps {
   colorMode: ColorMode;
   dims: ShellDims;
   onNavClick?: (label: string) => void;
+  onOpenAssistant?: () => void;
 }
 
 export default function Sidebar({
@@ -184,6 +226,7 @@ export default function Sidebar({
   colorMode,
   dims,
   onNavClick,
+  onOpenAssistant,
 }: SidebarProps) {
   const [expanded, setExpanded] = useState(false);
   const [activeItem, setActiveItem] = useState(navItems[0].label);
@@ -215,10 +258,19 @@ export default function Sidebar({
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >
-      {/* Logo */}
-      <LogoBlock $collapsedW={collapsedW}>
-        <LogoShape />
-      </LogoBlock>
+      {/* Logo + product label */}
+      <LogoRow $headerHeight={dims.headerHeight}>
+        <LogoBlock $collapsedW={collapsedW}>
+          <LogoShape />
+        </LogoBlock>
+        <ProductLabel
+          $expanded={expanded}
+          $color={dims.textPrimary}
+          $bg={dims.sidebarBg}
+        >
+          {PRODUCT_LABEL}
+        </ProductLabel>
+      </LogoRow>
 
       {/* Nav items */}
       <NavScroll>
@@ -245,6 +297,27 @@ export default function Sidebar({
 
       {/* Bottom utilities */}
       <BottomSection>
+        <NavItemRow
+          $active={false}
+          $collapsedW={collapsedW}
+          $accent={dims.accent}
+          $hoverBg={hoverBg}
+          $textPrimary={dims.textPrimary}
+          $textSecondary={dims.textSecondary}
+          $expanded={expanded}
+          onClick={() => {
+            handleNavClick("AI Assistant");
+            onOpenAssistant?.();
+          }}
+          title="AI Assistant"
+        >
+          <IconCell $collapsedW={collapsedW}>{icons.assistant}</IconCell>
+          <Label $expanded={expanded}>AI Assistant</Label>
+          <Shortcut $expanded={expanded} $color={dims.textMuted}>
+            ⌘J
+          </Shortcut>
+        </NavItemRow>
+
         <NavItemRow
           $active={false}
           $collapsedW={collapsedW}

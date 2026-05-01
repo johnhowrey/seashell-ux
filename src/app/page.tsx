@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import MainContent from "@/components/MainContent";
 import AssistantPanel from "@/components/AssistantPanel";
+import AccessibilityModal from "@/components/AccessibilityModal";
 import {
   ShellVariant,
   ColorMode,
@@ -78,8 +79,9 @@ function getMergedDims(
 
 export default function Page() {
   const [variant, setVariant] = useState<ShellVariant>("standard");
-  const [colorMode, setColorMode] = useState<ColorMode>("default");
+  const [colorMode, setColorMode] = useState<ColorMode>("digitalocean");
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [a11yOpen, setA11yOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
 
   const dims = getMergedDims(variant, colorMode);
@@ -118,7 +120,12 @@ export default function Page() {
       $bg={dims.gap > 0 ? dims.contentBg : "transparent"}
       $radius={dims.borderRadius}
     >
-      <Sidebar variant={variant} colorMode={colorMode} dims={dims} />
+      <Sidebar
+        variant={variant}
+        colorMode={colorMode}
+        dims={dims}
+        onOpenAssistant={() => setAssistantOpen(true)}
+      />
       <MainArea $radius={dims.borderRadius}>
         <Header
           variant={variant}
@@ -133,8 +140,8 @@ export default function Page() {
             dims={dims}
             onVariantChange={setVariant}
             onColorModeChange={setColorMode}
-            activeAccessibility={activeA11y}
-            onToggleAccessibility={toggleA11y}
+            onOpenAccessibility={() => setA11yOpen(true)}
+            onOpenAssistant={() => setAssistantOpen(true)}
           />
           <AssistantPanel
             open={assistantOpen}
@@ -143,6 +150,14 @@ export default function Page() {
           />
         </ContentRow>
       </MainArea>
+      <AccessibilityModal
+        open={a11yOpen}
+        onClose={() => setA11yOpen(false)}
+        dims={dims}
+        isDark={colorMode === "dark" || variant === "floating"}
+        activeAccessibility={activeA11y}
+        onToggle={toggleA11y}
+      />
     </ShellContainer>
   );
 }

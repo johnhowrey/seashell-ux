@@ -245,7 +245,7 @@ const endpoints = [
 
 export default function InferencePage() {
   const [variant] = useState<ShellVariant>("standard");
-  const [colorMode] = useState<ColorMode>("default");
+  const [colorMode] = useState<ColorMode>("digitalocean");
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   const dims = getMergedDims(variant, colorMode);
@@ -265,7 +265,12 @@ export default function InferencePage() {
       $bg={dims.gap > 0 ? dims.contentBg : "transparent"}
       $radius={dims.borderRadius}
     >
-      <Sidebar variant={variant} colorMode={colorMode} dims={dims} />
+      <Sidebar
+        variant={variant}
+        colorMode={colorMode}
+        dims={dims}
+        onOpenAssistant={() => setAssistantOpen(true)}
+      />
       <MainArea $radius={dims.borderRadius}>
         <Header
           variant={variant}
