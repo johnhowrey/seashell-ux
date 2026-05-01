@@ -11,19 +11,23 @@ interface DimProps {
   $variant: ShellVariant;
 }
 
-const W = 52;
-
-const Wrap = styled.aside<DimProps & { $hidden: boolean }>`
+// Sidebar width is variant-specific and expands when the user hits the
+// bottom collapse-toggle. Live source: width transitions over 0.15s.
+const Wrap = styled.aside<DimProps & { $hidden: boolean; $expanded: boolean }>`
   position: relative;
   display: ${(p) => (p.$hidden ? "none" : "flex")};
   flex-direction: column;
   flex-shrink: 0;
-  width: ${W}px;
-  min-width: ${W}px;
+  width: ${(p) =>
+    p.$expanded ? p.$dims.sidebarOpen : p.$dims.sidebarCollapsed}px;
+  min-width: ${(p) =>
+    p.$expanded ? p.$dims.sidebarOpen : p.$dims.sidebarCollapsed}px;
   height: 100%;
   background: ${(p) => p.$dims.sidebarBg};
   border-right: 1px solid ${(p) => p.$dims.borderLight};
   z-index: 20;
+  transition: width 0.15s cubic-bezier(0.2, 0, 0, 1),
+    min-width 0.15s cubic-bezier(0.2, 0, 0, 1);
 
   ${(p) =>
     p.$variant === "floating" &&
@@ -34,15 +38,17 @@ const Wrap = styled.aside<DimProps & { $hidden: boolean }>`
   `}
 `;
 
-const LogoBlock = styled.div<{ $headerHeight: number }>`
+// Logo block stretches to match the sidebar width when expanded.
+const LogoBlock = styled.div<{ $headerHeight: number; $width: number }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${W}px;
+  width: ${(p) => p.$width}px;
   height: ${(p) => p.$headerHeight}px;
   flex-shrink: 0;
   background: #0061eb;
   cursor: pointer;
+  transition: width 0.15s cubic-bezier(0.2, 0, 0, 1);
 `;
 
 const LogoMark = styled.svg`
@@ -65,14 +71,18 @@ const NavScroll = styled.div`
 // Live source: hovered nav row gets a solid #0061eb (accent) background
 // across the full sidebar width, white icon — visually contiguous with the
 // blue flyout that opens to its right.
-const NavItemRow = styled.button<DimProps & { $active: boolean; $hovered: boolean }>`
+const NavItemRow = styled.button<
+  DimProps & { $active: boolean; $hovered: boolean; $expanded: boolean }
+>`
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: ${W}px;
-  height: ${W}px;
-  padding: 0;
+  justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
+  gap: ${(p) => (p.$expanded ? "12px" : "0")};
+  width: ${(p) =>
+    p.$expanded ? p.$dims.sidebarOpen : p.$dims.sidebarCollapsed}px;
+  height: ${(p) => p.$dims.sidebarCollapsed}px;
+  padding: ${(p) => (p.$expanded ? "0 16px" : "0")};
   background: ${(p) => (p.$hovered ? "#0061eb" : "transparent")};
   border: none;
   cursor: pointer;
@@ -83,7 +93,9 @@ const NavItemRow = styled.button<DimProps & { $active: boolean; $hovered: boolea
       ? p.$dims.accent
       : p.$dims.textSecondary};
   flex-shrink: 0;
-  transition: color 0.1s ease, background 0.1s ease;
+  transition: color 0.1s ease, background 0.1s ease,
+    width 0.15s cubic-bezier(0.2, 0, 0, 1),
+    padding 0.15s cubic-bezier(0.2, 0, 0, 1);
 
   ${(p) =>
     p.$active &&
@@ -107,15 +119,26 @@ const NavItemRow = styled.button<DimProps & { $active: boolean; $hovered: boolea
   }
 `;
 
+const NavLabel = styled.span<{ $color: string }>`
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  color: ${(p) => p.$color};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
 /* ──────────── Blue flyout (one per nav item, on hover) ──────────── */
 
 // Live source: Sidebar__FixedFlyout — adjacent to the sidebar (no gap),
 // solid #0061eb, no border-radius, no shadow. Items 52px tall, padding
 // 0 19px, white Epilogue 13px / 500.
-const Flyout = styled.div<{ $top: number }>`
+const Flyout = styled.div<{ $top: number; $left: number }>`
   position: fixed;
   top: ${(p) => p.$top}px;
-  left: ${W}px;
+  left: ${(p) => p.$left}px;
   background: #0061eb;
   border-radius: 0;
   padding: 0;
@@ -242,6 +265,10 @@ export default function Sidebar({
   const [activeItem, setActiveItem] = useState(navItems[1]?.label ?? "Inference Hub");
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [hoveredTop, setHoveredTop] = useState(0);
+  // Click the bottom collapse-toggle to expand the sidebar to its open width.
+  // When expanded, labels render inline next to the icons and the hover
+  // flyout is suppressed (since the labels are visible).
+  const [expanded, setExpanded] = useState(false);
 
   const onEnter = (label: string, el: HTMLElement) => {
     setHoveredItem(label);
@@ -255,9 +282,15 @@ export default function Sidebar({
   const hidden = variant === "zen";
 
   return (
-    <Wrap $variant={variant} $dims={dims} $hidden={hidden}>
+    <Wrap
+      $variant={variant}
+      $dims={dims}
+      $hidden={hidden}
+      $expanded={expanded}
+    >
       <LogoBlock
         $headerHeight={dims.headerHeight}
+        $width={expanded ? dims.sidebarOpen : dims.sidebarCollapsed}
         onClick={() => navigate("/")}
         style={{ cursor: "pointer" }}
         title="Home"
@@ -275,6 +308,7 @@ export default function Sidebar({
             $dims={dims}
             $active={activeItem === item.label}
             $hovered={hoveredItem === item.label}
+            $expanded={expanded}
             type="button"
             onClick={() => {
               setActiveItem(item.label);
@@ -285,11 +319,24 @@ export default function Sidebar({
             title={item.label}
           >
             {icons[item.icon]}
+            {expanded && (
+              <NavLabel
+                $color={
+                  hoveredItem === item.label
+                    ? "#ffffff"
+                    : activeItem === item.label
+                    ? dims.accent
+                    : dims.textSecondary
+                }
+              >
+                {item.label}
+              </NavLabel>
+            )}
           </NavItemRow>
         ))}
 
-        {hovered && hovered.items.length > 0 && (
-          <Flyout $top={hoveredTop}>
+        {hovered && hovered.items.length > 0 && !expanded && (
+          <Flyout $top={hoveredTop} $left={dims.sidebarCollapsed}>
             {hovered.items.map((sub) => {
               const href = SUB_LINKS[sub];
               return (
@@ -324,8 +371,13 @@ export default function Sidebar({
           $variant={variant}
           $dims={dims}
           type="button"
-          aria-label="Collapse navigation"
-          title="Collapse"
+          aria-label={expanded ? "Collapse navigation" : "Expand navigation"}
+          title={expanded ? "Collapse" : "Expand"}
+          onClick={() => setExpanded((e) => !e)}
+          style={{
+            transform: expanded ? "scaleX(-1)" : "none",
+            transition: "transform 0.15s ease",
+          }}
         >
           {icons.collapseLeft}
         </BottomButton>

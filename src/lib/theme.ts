@@ -75,8 +75,8 @@ export const shellVariants: Record<
     description:
       "Maximum density. Same flat aesthetic, tighter spacing, smaller chrome.",
     layout: {
-      sidebarCollapsed: 40,
-      sidebarOpen: 180,
+      sidebarCollapsed: 42,
+      sidebarOpen: 168,
       headerHeight: 34,
       borderRadius: 0,
       gap: 0,
