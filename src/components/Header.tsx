@@ -327,11 +327,12 @@ const ZenLabel = styled.span<{ $forceOpen?: boolean }>`
 `;
 
 /* ── Create 2-level menu (CreateMenu__MenuPanel + FlyoutPanel) ──
-   Each variant has its own dropdown character in the live source:
-     • Standard: white surface, black text
-     • Floating: dark surface (#0e0e14 ish), white text
-     • Compact:  teal surface (#00879b), white text
-     • Zen:      white surface with a "CREATE NEW" label, no chevrons
+   Live source: Standard / Floating / Compact all share the SAME teal
+   dropdown (rgb(0,135,155) — same color as the Create button).
+   Items: 52px tall, padding 0 19px, white text, Epilogue 13px / 500.
+   No border-radius, no border, single drop shadow.
+   Zen is the exception: white panel with a "CREATE NEW" header label
+   and no right chevrons.
 */
 
 interface CreatePalette {
@@ -344,50 +345,40 @@ interface CreatePalette {
 }
 
 function createPalette(variant: ShellVariant): CreatePalette {
-  switch (variant) {
-    case "floating":
-      return {
-        bg: "#1e1e24",
-        hoverBg: "rgba(255, 255, 255, 0.08)",
-        activeBg: "rgba(255, 255, 255, 0.10)",
-        text: "#e8e8ec",
-        chevron: "#a0a0a8",
-        border: "rgba(255,255,255,0.06)",
-      };
-    case "compact":
-      return {
-        bg: "#00879b",
-        hoverBg: "#00707f",
-        activeBg: "#005c69",
-        text: "#ffffff",
-        chevron: "rgba(255,255,255,0.7)",
-        border: "rgba(255,255,255,0.12)",
-      };
-    case "zen":
-    case "standard":
-    default:
-      return {
-        bg: "#ffffff",
-        hoverBg: "#f3f4f6",
-        activeBg: "#f3f4f6",
-        text: "#1a1a1a",
-        chevron: "#878787",
-        border: "#e5e7eb",
-      };
+  if (variant === "zen") {
+    return {
+      bg: "#ffffff",
+      hoverBg: "#f3f4f6",
+      activeBg: "#f3f4f6",
+      text: "#1a1a1a",
+      chevron: "#878787",
+      border: "#e5e7eb",
+    };
   }
+  // Standard / Floating / Compact — verbatim from the live source.
+  return {
+    bg: "#00879b",
+    hoverBg: "#00707f",
+    activeBg: "#005c69",
+    text: "#ffffff",
+    chevron: "rgba(255,255,255,0.7)",
+    border: "transparent",
+  };
 }
 
-const CreatePanel = styled.div<{ $palette: CreatePalette }>`
+// Live panel width is 192px (non-Zen). Zen uses a slightly wider white
+// panel with a "CREATE NEW" header.
+const CreatePanel = styled.div<{ $palette: CreatePalette; $zen: boolean }>`
   position: fixed;
   background: ${(p) => p.$palette.bg};
   z-index: 100;
-  width: 220px;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  width: ${(p) => (p.$zen ? "220px" : "192px")};
+  border-radius: ${(p) => (p.$zen ? "8px" : "0px")};
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
   overflow: hidden;
-  font-family: var(--font-inter), "Inter", sans-serif;
-  padding: 4px 0;
-  border: 1px solid ${(p) => p.$palette.border};
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  padding: ${(p) => (p.$zen ? "4px 0" : "0")};
+  border: ${(p) => (p.$zen ? `1px solid ${p.$palette.border}` : "none")};
 `;
 
 const CreateMenuHeader = styled.div<{ $palette: CreatePalette }>`
@@ -400,13 +391,15 @@ const CreateMenuHeader = styled.div<{ $palette: CreatePalette }>`
   padding: 8px 16px 4px;
 `;
 
-const CategoryRow = styled.button<{ $active: boolean; $palette: CreatePalette }>`
+// Standard/Floating/Compact rows: 52px tall, 0 19px padding, no inner radius.
+// Zen rows: 38px tall with rounded hover.
+const CategoryRow = styled.button<{ $active: boolean; $palette: CreatePalette; $zen: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 38px;
-  padding: 0 16px;
+  height: ${(p) => (p.$zen ? "38px" : "52px")};
+  padding: ${(p) => (p.$zen ? "0 16px" : "0 19px")};
   background: ${(p) => (p.$active ? p.$palette.activeBg : "transparent")};
   border: none;
   cursor: pointer;
@@ -419,9 +412,12 @@ const CategoryRow = styled.button<{ $active: boolean; $palette: CreatePalette }>
   }
 `;
 
-const CategoryLabel = styled.span<{ $palette: CreatePalette }>`
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-weight: 500;
+const CategoryLabel = styled.span<{ $palette: CreatePalette; $zen: boolean }>`
+  font-family: ${(p) =>
+    p.$zen
+      ? `var(--font-inter), "Inter", sans-serif`
+      : `var(--font-epilogue), "Epilogue", sans-serif`};
+  font-weight: ${(p) => (p.$zen ? 500 : 500)};
   font-size: 13px;
   line-height: 1;
   color: ${(p) => p.$palette.text};
@@ -438,26 +434,26 @@ const ChevronArea = styled.span<{ $palette: CreatePalette }>`
   color: ${(p) => p.$palette.chevron};
 `;
 
-const FlyoutPanel = styled.div<{ $palette: CreatePalette }>`
+const FlyoutPanel = styled.div<{ $palette: CreatePalette; $zen: boolean }>`
   position: fixed;
   background: ${(p) => p.$palette.bg};
   z-index: 101;
-  min-width: 240px;
-  padding: 6px 0;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  font-family: var(--font-inter), "Inter", sans-serif;
-  border: 1px solid ${(p) => p.$palette.border};
+  min-width: ${(p) => (p.$zen ? "240px" : "192px")};
+  padding: ${(p) => (p.$zen ? "6px 0" : "0")};
+  border-radius: ${(p) => (p.$zen ? "8px" : "0px")};
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  border: ${(p) => (p.$zen ? `1px solid ${p.$palette.border}` : "none")};
 `;
 
-const SubItem = styled.button<{ $palette: CreatePalette }>`
+const SubItem = styled.button<{ $palette: CreatePalette; $zen: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   width: 100%;
-  height: 38px;
-  padding: 0 16px;
+  height: ${(p) => (p.$zen ? "38px" : "52px")};
+  padding: ${(p) => (p.$zen ? "0 16px" : "0 19px")};
   background: transparent;
   border: none;
   cursor: pointer;
@@ -469,9 +465,12 @@ const SubItem = styled.button<{ $palette: CreatePalette }>`
   }
 `;
 
-const SubItemLabel = styled.span<{ $palette: CreatePalette }>`
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-weight: 400;
+const SubItemLabel = styled.span<{ $palette: CreatePalette; $zen: boolean }>`
+  font-family: ${(p) =>
+    p.$zen
+      ? `var(--font-inter), "Inter", sans-serif`
+      : `var(--font-epilogue), "Epilogue", sans-serif`};
+  font-weight: 500;
   font-size: 13px;
   line-height: 1;
   color: ${(p) => p.$palette.text};
@@ -1128,6 +1127,7 @@ function Header({
             <CreatePanel
               role="menu"
               $palette={palette}
+              $zen={isZen}
               style={{
                 top: `${createPanelTop}px`,
                 left: `${createPanelLeft}px`,
@@ -1144,12 +1144,15 @@ function Header({
                   type="button"
                   $active={createCat === cat.label}
                   $palette={palette}
+                  $zen={isZen}
                   onMouseEnter={() => setCreateCat(cat.label)}
                   onClick={() => setCreateCat(cat.label)}
                   aria-haspopup="menu"
                   aria-expanded={createCat === cat.label}
                 >
-                  <CategoryLabel $palette={palette}>{cat.label}</CategoryLabel>
+                  <CategoryLabel $palette={palette} $zen={isZen}>
+                    {cat.label}
+                  </CategoryLabel>
                   {!isZen && (
                     <ChevronArea $palette={palette}>{icons.chevronRight}</ChevronArea>
                   )}
@@ -1161,6 +1164,7 @@ function Header({
                 ref={flyoutRef}
                 role="menu"
                 $palette={palette}
+                $zen={isZen}
                 style={{
                   top: `${createPanelTop}px`,
                   left: `${flyoutLeft}px`,
@@ -1173,13 +1177,16 @@ function Header({
                       key={item.label}
                       type="button"
                       $palette={palette}
+                      $zen={isZen}
                       onClick={() => {
                         setCreateOpen(false);
                         setCreateCat(null);
                         if (href) window.location.href = href;
                       }}
                     >
-                      <SubItemLabel $palette={palette}>{item.label}</SubItemLabel>
+                      <SubItemLabel $palette={palette} $zen={isZen}>
+                        {item.label}
+                      </SubItemLabel>
                       {item.badge && (
                         <Badge $variant={item.badge}>{item.badge}</Badge>
                       )}

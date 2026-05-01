@@ -62,7 +62,10 @@ const NavScroll = styled.div`
   }
 `;
 
-const NavItemRow = styled.button<DimProps & { $active: boolean }>`
+// Live source: hovered nav row gets a solid #0061eb (accent) background
+// across the full sidebar width, white icon — visually contiguous with the
+// blue flyout that opens to its right.
+const NavItemRow = styled.button<DimProps & { $active: boolean; $hovered: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
@@ -70,15 +73,21 @@ const NavItemRow = styled.button<DimProps & { $active: boolean }>`
   width: ${W}px;
   height: ${W}px;
   padding: 0;
-  background: transparent;
+  background: ${(p) => (p.$hovered ? "#0061eb" : "transparent")};
   border: none;
   cursor: pointer;
-  color: ${(p) => (p.$active ? p.$dims.accent : p.$dims.textSecondary)};
+  color: ${(p) =>
+    p.$hovered
+      ? "#ffffff"
+      : p.$active
+      ? p.$dims.accent
+      : p.$dims.textSecondary};
   flex-shrink: 0;
   transition: color 0.1s ease, background 0.1s ease;
 
   ${(p) =>
     p.$active &&
+    !p.$hovered &&
     `
     &::before {
       content: "";
@@ -93,48 +102,49 @@ const NavItemRow = styled.button<DimProps & { $active: boolean }>`
   `}
 
   &:hover {
-    color: ${(p) => p.$dims.textPrimary};
+    background: #0061eb;
+    color: #ffffff;
   }
 `;
 
 /* ──────────── Blue flyout (one per nav item, on hover) ──────────── */
 
+// Live source: Sidebar__FixedFlyout — adjacent to the sidebar (no gap),
+// solid #0061eb, no border-radius, no shadow. Items 52px tall, padding
+// 0 19px, white Epilogue 13px / 500.
 const Flyout = styled.div<{ $top: number }>`
   position: fixed;
   top: ${(p) => p.$top}px;
-  left: ${W + 4}px;
+  left: ${W}px;
   background: #0061eb;
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   z-index: 50;
-  min-width: 180px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-family: var(--font-inter), "Inter", sans-serif;
+  min-width: 192px;
+  box-shadow: none;
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
 `;
 
 const FlyoutItem = styled.button`
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 7px 0;
+  height: 52px;
+  padding: 0 19px;
   background: none;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   cursor: pointer;
   text-align: left;
   font-family: inherit;
-  font-weight: 400;
+  font-weight: 500;
   font-size: 13px;
-  line-height: 1.3;
+  line-height: 1;
   color: #ffffff;
 
-  &:last-child {
-    border-bottom: none;
-  }
   &:hover {
-    opacity: 0.78;
+    background: rgba(0, 0, 0, 0.08);
   }
 `;
 
@@ -264,6 +274,7 @@ export default function Sidebar({
             $variant={variant}
             $dims={dims}
             $active={activeItem === item.label}
+            $hovered={hoveredItem === item.label}
             type="button"
             onClick={() => {
               setActiveItem(item.label);

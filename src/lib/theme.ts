@@ -156,34 +156,6 @@ export function getMergedDims(
   colorMode: ColorMode
 ): ShellDims {
   const layout = shellVariants[variant].layout;
-
-  // Floating has its own visual identity (dark canvas + dark panels) in the
-  // live source — that's part of the variant, not the color mode. We render
-  // it independently of the active color mode, but DO NOT mutate the color
-  // mode state itself; the picker stays on whatever the user chose so when
-  // they switch back to Standard/Compact/Zen they return to that palette.
-  if (variant === "floating") {
-    return {
-      sidebarCollapsed: layout.sidebarCollapsed,
-      sidebarOpen: layout.sidebarOpen,
-      headerHeight: layout.headerHeight,
-      borderRadius: layout.borderRadius,
-      gap: layout.gap,
-      contentBg: "#0e0e14",
-      surfaceBg: "#1e1e24",
-      sidebarBg: "#1e1e24",
-      headerBg: "#1e1e24",
-      borderLight: "#2a2a32",
-      textPrimary: "#e8e8ec",
-      textSecondary: "#b8b8c0",
-      textMuted: "#80808c",
-      accent: "#6366f1",
-      accentHover: "#5558e6",
-      createBg: "#00879b",
-      createHover: "#00707f",
-    };
-  }
-
   const cm = colorModes[colorMode];
 
   // Layout decides whether the page sits on bg (flush) or canvas (detached).
