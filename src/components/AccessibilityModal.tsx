@@ -140,28 +140,34 @@ const ToggleHint = styled.span<DimProps>`
   line-height: 1.4;
 `;
 
-const ToggleTrack = styled.button<{ $on: boolean; $accent: string }>`
+const ToggleTrack = styled.button<{ $on: boolean; $accent: string; $offBg: string }>`
   position: relative;
-  width: 40px;
-  height: 22px;
-  border-radius: 11px;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  background: ${(p) => (p.$on ? p.$accent : "#cccccc")};
-  transition: background 0.15s ease;
+  background: ${(p) => (p.$on ? p.$accent : p.$offBg)};
+  transition: background 0.18s ease;
   padding: 0;
   flex-shrink: 0;
+
+  &:focus-visible {
+    outline: 2px solid ${(p) => p.$accent};
+    outline-offset: 2px;
+  }
 `;
 
 const ToggleThumb = styled.span<{ $on: boolean }>`
   position: absolute;
   top: 2px;
-  left: ${(p) => (p.$on ? "20px" : "2px")};
-  width: 18px;
-  height: 18px;
+  left: ${(p) => (p.$on ? "22px" : "2px")};
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #ffffff;
-  transition: left 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: left 0.18s cubic-bezier(0.2, 0, 0, 1);
 `;
 
 const Footer = styled.div<DimProps>`
@@ -286,6 +292,7 @@ const AccessibilityModal: React.FC<AccessibilityModalProps> = ({
                   type="button"
                   $on={isOn}
                   $accent={dims.accent}
+                  $offBg={isDark ? "#3a3a44" : "#cccccc"}
                   onClick={() => onToggle(opt.id)}
                   aria-pressed={isOn}
                   aria-label={opt.label}

@@ -122,18 +122,21 @@ const NavItemRow = styled.button<NavItemProps>`
   display: flex;
   align-items: center;
   width: 100%;
-  height: 36px;
+  height: 52px;
   padding: 0;
   margin: 0;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: ${(p) => (p.$active ? p.$accent : p.$textSecondary)};
+  text-align: left;
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
+  line-height: 1.5;
+  color: ${(p) => (p.$active ? p.$accent : p.$textPrimary)};
   white-space: nowrap;
-  transition: background 0.1s, color 0.1s;
+  transition: background 0.1s ease, color 0.1s ease;
+  flex-shrink: 0;
 
   ${(p) =>
     p.$active &&
@@ -142,8 +145,8 @@ const NavItemRow = styled.button<NavItemProps>`
       content: "";
       position: absolute;
       left: 0;
-      top: 4px;
-      bottom: 4px;
+      top: 8px;
+      bottom: 8px;
       width: 3px;
       border-radius: 0 2px 2px 0;
       background: ${p.$accent};
@@ -152,7 +155,6 @@ const NavItemRow = styled.button<NavItemProps>`
 
   &:hover {
     background: ${(p) => p.$hoverBg};
-    color: ${(p) => p.$textPrimary};
   }
 `;
 
@@ -161,11 +163,18 @@ const IconCell = styled.span<{ $collapsedW: number }>`
   align-items: center;
   justify-content: center;
   width: ${(p) => p.$collapsedW}px;
+  height: ${(p) => p.$collapsedW}px;
   flex-shrink: 0;
 `;
 
 const Label = styled.span<{ $expanded: boolean }>`
   flex: 1;
+  min-width: 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: left;
   opacity: ${(p) => (p.$expanded ? 1 : 0)};
   transition: opacity 0.12s ease;
   pointer-events: ${(p) => (p.$expanded ? "auto" : "none")};

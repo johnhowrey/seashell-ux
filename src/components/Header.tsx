@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import styled, { css } from "styled-components";
-import { ShellVariant, ShellDims } from "../lib/theme";
+import { ShellVariant, ShellDims, createMenuItems } from "../lib/theme";
 import { icons } from "../lib/icons";
 
 interface HeaderProps {
@@ -33,7 +33,7 @@ const Container = styled.header<HasDims>`
   border-bottom: ${({ $variant, $dims }) =>
     $variant === "floating" ? "none" : `1px solid ${$dims.borderLight}`};
   position: relative;
-  z-index: 10;
+  z-index: 30;
 
   ${({ $variant, $dims }) =>
     $variant === "floating" &&
@@ -41,7 +41,7 @@ const Container = styled.header<HasDims>`
       border-radius: ${$dims.borderRadius}px;
       margin: ${$dims.gap}px ${$dims.gap}px 0 ${$dims.gap}px;
       border: 1px solid ${$dims.borderLight};
-      overflow: hidden;
+      overflow: visible;
     `}
 `;
 
@@ -52,7 +52,7 @@ const BreadcrumbWrap = styled.div`
   align-items: center;
   flex: 1;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 `;
 
 const BackButton = styled.button<HasDims>`
@@ -79,13 +79,13 @@ const CrumbTrail = styled.div`
   align-items: center;
   gap: 2px;
   min-width: 0;
-  overflow: hidden;
 `;
 
 const CrumbGroup = styled.div`
   display: flex;
   align-items: center;
   min-width: 0;
+  position: relative;
 `;
 
 const Segment = styled.button<HasDims & { $active: boolean }>`
@@ -133,6 +133,62 @@ const Separator = styled.span<HasDims>`
   flex-shrink: 0;
 `;
 
+/* ───────────── Generic dropdown panels (anchored below) ───────────── */
+
+const Popover = styled.div<{ $surface: string; $border: string }>`
+  position: absolute;
+  top: calc(100% + 4px);
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  z-index: 40;
+  overflow: hidden;
+  min-width: 220px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+`;
+
+const PopoverItem = styled.button<{ $color: string; $hoverBg: string }>`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: ${(p) => p.$color};
+  text-align: left;
+  &:hover {
+    background: ${(p) => p.$hoverBg};
+  }
+`;
+
+const PopoverLabel = styled.div<{ $color: string }>`
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: ${(p) => p.$color};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const PopoverDivider = styled.div<{ $color: string }>`
+  height: 1px;
+  background: ${(p) => p.$color};
+  margin: 4px 0;
+`;
+
+const Swatch = styled.span<{ $color: string }>`
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: ${(p) => p.$color};
+  flex-shrink: 0;
+`;
+
 /* ────────────────────────────── Actions ────────────────────────────── */
 
 const Actions = styled.div<HasDims>`
@@ -140,17 +196,27 @@ const Actions = styled.div<HasDims>`
   align-items: stretch;
   height: ${({ $dims }) => $dims.headerHeight}px;
   flex-shrink: 0;
+  position: relative;
 `;
 
-const CreateButton = styled.button<HasDims>`
+const CreateAnchor = styled.div`
+  position: relative;
+  display: flex;
+`;
+
+const CreateButton = styled.button<HasDims & { $open: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   height: 100%;
   padding: 0 16px;
-  background: ${({ $variant }) =>
-    $variant === "zen" ? "rgba(255,255,255,0.16)" : "#00879b"};
+  background: ${({ $variant, $open }) => {
+    if ($variant === "zen") {
+      return $open ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.16)";
+    }
+    return $open ? "#00707f" : "#00879b";
+  }};
   border: none;
   color: #ffffff;
   font-family: var(--font-epilogue), "Epilogue", sans-serif;
@@ -167,22 +233,48 @@ const CreateButton = styled.button<HasDims>`
   }
 `;
 
-const SearchWrap = styled.div<HasDims>`
+const CreateMenuPanel = styled.div<{ $surface: string; $border: string }>`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+  z-index: 40;
+  min-width: 280px;
+  padding: 6px 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+`;
+
+const SearchAnchor = styled.div`
+  position: relative;
+  display: flex;
+`;
+
+const SearchWrap = styled.div<HasDims & { $focused: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
   height: 100%;
   background: ${({ $variant, $dims }) =>
-    $variant === "zen"
-      ? "rgba(255,255,255,0.1)"
-      : $dims.surfaceBg};
-  min-width: 200px;
+    $variant === "zen" ? "rgba(255,255,255,0.1)" : $dims.surfaceBg};
+  min-width: 240px;
   border-left: 1px solid
-    ${({ $variant, $dims }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.2)" : $dims.borderLight};
+    ${({ $variant, $dims, $focused }) =>
+      $variant === "zen"
+        ? "rgba(255,255,255,0.2)"
+        : $focused
+          ? $dims.accent
+          : $dims.borderLight};
   border-right: 1px solid
-    ${({ $variant, $dims }) =>
-      $variant === "zen" ? "rgba(255,255,255,0.2)" : $dims.borderLight};
+    ${({ $variant, $dims, $focused }) =>
+      $variant === "zen"
+        ? "rgba(255,255,255,0.2)"
+        : $focused
+          ? $dims.accent
+          : $dims.borderLight};
+  transition: border-color 0.15s ease;
 `;
 
 const SearchIcon = styled.span<HasDims>`
@@ -213,6 +305,22 @@ const SearchInput = styled.input<HasDims>`
       $variant === "zen" ? "rgba(255,255,255,0.7)" : $dims.textMuted};
     font-weight: 500;
   }
+`;
+
+const SearchPopover = styled.div<{ $surface: string; $border: string }>`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  z-index: 40;
+  max-height: 360px;
+  overflow-y: auto;
+  font-family: var(--font-inter), "Inter", sans-serif;
 `;
 
 const AssistantButton = styled.button<HasDims & { $active: boolean }>`
@@ -260,7 +368,7 @@ const KeyHint = styled.span`
   margin-left: 2px;
 `;
 
-/* ───────────────────────────── Component ───────────────────────────── */
+/* ────────────────────────── Breadcrumb data ────────────────────────── */
 
 const DEFAULT_BREADCRUMBS = [
   "Acme Corp",
@@ -268,6 +376,64 @@ const DEFAULT_BREADCRUMBS = [
   "roadtrip-copilot",
   "Dashboard",
 ];
+
+const BREADCRUMB_SIBLINGS: Record<string, string[]> = {
+  "Acme Corp": ["Acme Corp", "Globex Inc.", "Initech", "+ New team"],
+  "Platform Engineering": [
+    "Platform Engineering",
+    "Growth",
+    "Data Science",
+    "+ New project",
+  ],
+  "roadtrip-copilot": [
+    "roadtrip-copilot",
+    "fleet-tracker",
+    "trip-planner-api",
+    "+ New resource",
+  ],
+  Dashboard: ["Overview", "Insights", "Activity", "Settings"],
+};
+
+const SEARCH_RECENT = [
+  "prod-llama-3 endpoint",
+  "Production Postgres cluster",
+  "VPC default-nyc1",
+];
+
+const SEARCH_SHORTCUTS = [
+  { icon: "+", label: "Create Droplet" },
+  { icon: "+", label: "Create Database" },
+  { icon: "→", label: "Open Inference Hub" },
+];
+
+/* ───────────────────────────── Hooks ───────────────────────────── */
+
+function useOutsideClose<T extends HTMLElement>(
+  open: boolean,
+  onClose: () => void,
+  refs: React.RefObject<T | null>[]
+) {
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (refs.every((r) => r.current && !r.current.contains(t))) {
+        onClose();
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose, refs]);
+}
+
+/* ───────────────────────────── Component ───────────────────────────── */
 
 function Header({
   variant,
@@ -278,7 +444,15 @@ function Header({
   breadcrumbs = DEFAULT_BREADCRUMBS,
 }: HeaderProps) {
   const searchRef = useRef<HTMLInputElement>(null);
+  const searchAnchorRef = useRef<HTMLDivElement>(null);
+  const createAnchorRef = useRef<HTMLDivElement>(null);
+  const crumbAnchorRef = useRef<HTMLDivElement>(null);
+
   const [isMac, setIsMac] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [openCrumb, setOpenCrumb] = useState<number | null>(null);
 
   useEffect(() => {
     const mac =
@@ -303,7 +477,26 @@ function Header({
     return () => window.removeEventListener("keydown", onKey);
   }, [onToggleAssistant]);
 
+  useOutsideClose(createOpen, () => setCreateOpen(false), [createAnchorRef]);
+  useOutsideClose(searchOpen, () => setSearchOpen(false), [searchAnchorRef]);
+  useOutsideClose(openCrumb !== null, () => setOpenCrumb(null), [
+    crumbAnchorRef,
+  ]);
+
   const cmd = isMac ? "⌘" : "Ctrl+";
+  const hoverBg = dims.surfaceBg === "#ffffff" ? "#f0f4ff" : "rgba(255,255,255,0.06)";
+
+  // Filter search suggestions based on current input
+  const matchedRecent = searchValue
+    ? SEARCH_RECENT.filter((r) =>
+        r.toLowerCase().includes(searchValue.toLowerCase())
+      )
+    : SEARCH_RECENT;
+  const matchedShortcuts = searchValue
+    ? SEARCH_SHORTCUTS.filter((s) =>
+        s.label.toLowerCase().includes(searchValue.toLowerCase())
+      )
+    : SEARCH_SHORTCUTS;
 
   return (
     <Container $variant={variant} $dims={dims}>
@@ -313,12 +506,14 @@ function Header({
           $dims={dims}
           aria-label="Go back"
           onClick={() => onBack?.()}
+          type="button"
         >
           {icons.arrowLeft}
         </BackButton>
-        <CrumbTrail>
+        <CrumbTrail ref={crumbAnchorRef}>
           {breadcrumbs.map((part, i) => {
             const isLast = i === breadcrumbs.length - 1;
+            const siblings = BREADCRUMB_SIBLINGS[part];
             return (
               <CrumbGroup key={`${part}-${i}`}>
                 <Segment
@@ -327,6 +522,12 @@ function Header({
                   $active={isLast}
                   type="button"
                   title={part}
+                  onClick={() => {
+                    if (!siblings) return;
+                    setOpenCrumb(openCrumb === i ? null : i);
+                  }}
+                  aria-haspopup={siblings ? "menu" : undefined}
+                  aria-expanded={openCrumb === i ? true : undefined}
                 >
                   {part}
                 </Segment>
@@ -335,6 +536,33 @@ function Header({
                     /
                   </Separator>
                 )}
+                {openCrumb === i && siblings && (
+                  <Popover
+                    $surface={dims.surfaceBg}
+                    $border={dims.borderLight}
+                    style={{ left: 0 }}
+                    role="menu"
+                  >
+                    <PopoverLabel $color={dims.textMuted}>
+                      Switch
+                    </PopoverLabel>
+                    {siblings.map((s) => (
+                      <PopoverItem
+                        key={s}
+                        $color={
+                          s === part ? dims.accent : dims.textPrimary
+                        }
+                        $hoverBg={hoverBg}
+                        type="button"
+                        onClick={() => setOpenCrumb(null)}
+                        role="menuitem"
+                      >
+                        {s === part ? icons.check : <span style={{ width: 12 }} />}
+                        <span>{s}</span>
+                      </PopoverItem>
+                    ))}
+                  </Popover>
+                )}
               </CrumbGroup>
             );
           })}
@@ -342,23 +570,140 @@ function Header({
       </BreadcrumbWrap>
 
       <Actions $variant={variant} $dims={dims}>
-        <CreateButton $variant={variant} $dims={dims} type="button">
-          {icons.plusBold}
-          Create
-        </CreateButton>
-        <SearchWrap $variant={variant} $dims={dims}>
-          <SearchIcon $variant={variant} $dims={dims} aria-hidden>
-            {icons.searchSm}
-          </SearchIcon>
-          <SearchInput
-            ref={searchRef}
+        <CreateAnchor ref={createAnchorRef}>
+          <CreateButton
             $variant={variant}
             $dims={dims}
-            type="text"
-            placeholder="Search..."
-            aria-label="Search"
-          />
-        </SearchWrap>
+            $open={createOpen}
+            type="button"
+            onClick={() => setCreateOpen((o) => !o)}
+            aria-haspopup="menu"
+            aria-expanded={createOpen}
+          >
+            {icons.plusBold}
+            Create
+          </CreateButton>
+          {createOpen && (
+            <CreateMenuPanel
+              $surface={dims.surfaceBg}
+              $border={dims.borderLight}
+              role="menu"
+            >
+              {createMenuItems.map((cat, idx) => (
+                <React.Fragment key={cat.category}>
+                  {idx > 0 && (
+                    <PopoverDivider $color={dims.borderLight} />
+                  )}
+                  <PopoverLabel $color={dims.textMuted}>
+                    {cat.category}
+                  </PopoverLabel>
+                  {cat.items.map((item) => (
+                    <PopoverItem
+                      key={item}
+                      $color={dims.textPrimary}
+                      $hoverBg={hoverBg}
+                      type="button"
+                      onClick={() => setCreateOpen(false)}
+                      role="menuitem"
+                    >
+                      <span style={{ color: dims.textMuted, width: 14 }}>
+                        +
+                      </span>
+                      <span>{item}</span>
+                    </PopoverItem>
+                  ))}
+                </React.Fragment>
+              ))}
+            </CreateMenuPanel>
+          )}
+        </CreateAnchor>
+
+        <SearchAnchor ref={searchAnchorRef}>
+          <SearchWrap
+            $variant={variant}
+            $dims={dims}
+            $focused={searchOpen}
+          >
+            <SearchIcon $variant={variant} $dims={dims} aria-hidden>
+              {icons.searchSm}
+            </SearchIcon>
+            <SearchInput
+              ref={searchRef}
+              $variant={variant}
+              $dims={dims}
+              type="text"
+              placeholder="Search..."
+              aria-label="Search"
+              value={searchValue}
+              onChange={(e) => {
+                setSearchValue(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+            />
+          </SearchWrap>
+          {searchOpen && (
+            <SearchPopover
+              $surface={dims.surfaceBg}
+              $border={dims.borderLight}
+            >
+              {matchedRecent.length === 0 && matchedShortcuts.length === 0 && (
+                <PopoverItem
+                  $color={dims.textMuted}
+                  $hoverBg={hoverBg}
+                  as="div"
+                >
+                  No matches
+                </PopoverItem>
+              )}
+              {matchedRecent.length > 0 && (
+                <>
+                  <PopoverLabel $color={dims.textMuted}>Recent</PopoverLabel>
+                  {matchedRecent.map((r) => (
+                    <PopoverItem
+                      key={r}
+                      $color={dims.textPrimary}
+                      $hoverBg={hoverBg}
+                      type="button"
+                      onClick={() => {
+                        setSearchValue(r);
+                        setSearchOpen(false);
+                      }}
+                    >
+                      <Swatch $color={dims.textMuted} />
+                      <span>{r}</span>
+                    </PopoverItem>
+                  ))}
+                </>
+              )}
+              {matchedShortcuts.length > 0 && (
+                <>
+                  {matchedRecent.length > 0 && (
+                    <PopoverDivider $color={dims.borderLight} />
+                  )}
+                  <PopoverLabel $color={dims.textMuted}>
+                    Shortcuts
+                  </PopoverLabel>
+                  {matchedShortcuts.map((s) => (
+                    <PopoverItem
+                      key={s.label}
+                      $color={dims.textPrimary}
+                      $hoverBg={hoverBg}
+                      type="button"
+                      onClick={() => setSearchOpen(false)}
+                    >
+                      <span style={{ color: dims.textMuted, width: 14 }}>
+                        {s.icon}
+                      </span>
+                      <span>{s.label}</span>
+                    </PopoverItem>
+                  ))}
+                </>
+              )}
+            </SearchPopover>
+          )}
+        </SearchAnchor>
+
         <AssistantButton
           $variant={variant}
           $dims={dims}

@@ -6,13 +6,7 @@ import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import AssistantPanel from "@/components/AssistantPanel";
-import {
-  ShellVariant,
-  ColorMode,
-  shellVariants,
-  colorModes,
-  ShellDims,
-} from "@/lib/theme";
+import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
 
 /* ── Shell layout (mirrored from main page) ── */
 
@@ -167,30 +161,6 @@ const StatusBadge = styled.span<{ $color: string; $bgColor: string }>`
     background: ${(p) => p.$bgColor};
   }
 `;
-
-/* ── Helpers ── */
-
-function getMergedDims(
-  variant: ShellVariant,
-  colorMode: ColorMode
-): ShellDims {
-  const base = shellVariants[variant].dims;
-  if (variant === "floating") return base;
-
-  const cm = colorModes[colorMode];
-  return {
-    ...base,
-    contentBg: cm.bg,
-    surfaceBg: cm.surface,
-    textPrimary: cm.text,
-    borderLight: cm.border,
-    accent: cm.accent,
-    headerBg: variant === "zen" ? cm.accent : cm.surface,
-    sidebarBg: cm.surface,
-    textSecondary: colorMode === "dark" ? "#a0a0a8" : "#555555",
-    textMuted: colorMode === "dark" ? "#666670" : "#999999",
-  };
-}
 
 /* ── Mock data ── */
 

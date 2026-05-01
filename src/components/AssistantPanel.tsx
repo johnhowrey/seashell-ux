@@ -1,68 +1,53 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import styled from "styled-components";
 import type { ShellDims } from "../lib/theme";
 import { icons } from "../lib/icons";
-
-/* ------------------------------------------------------------------ */
-/*  Transient-prop interfaces                                         */
-/* ------------------------------------------------------------------ */
-
-interface PanelProps {
-  $open: boolean;
-  $dims: ShellDims;
-}
 
 interface DimProps {
   $dims: ShellDims;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Styled components                                                 */
-/* ------------------------------------------------------------------ */
+/* ────────────────────────────── Layout ────────────────────────────── */
 
-const Wrapper = styled.div<PanelProps>`
+/**
+ * Gutter: a layout column whose width animates between 0 and 440px.
+ * This is what makes the rest of the page CONTENT shift when the panel
+ * opens — the live behavior. The actual panel sits inside as an
+ * absolute-positioned child so its content can extend to the edges.
+ */
+const Gutter = styled.div<{ $open: boolean }>`
+  position: relative;
+  flex-shrink: 0;
+  height: 100%;
+  width: ${(p) => (p.$open ? "440px" : "0")};
+  transition: width 0.22s cubic-bezier(0.2, 0, 0, 1);
+  overflow: hidden;
+`;
+
+const Panel = styled.aside<{ $open: boolean; $surface: string }>`
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   width: 440px;
-  z-index: 20;
+  background: ${(p) => p.$surface};
   display: flex;
   flex-direction: column;
-  background: ${({ $dims }) => $dims.surfaceBg};
-  border-left: 1px solid ${({ $dims }) => $dims.borderLight};
-  transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
-  opacity: ${({ $open }) => ($open ? 1 : 0)};
-  transition:
-    transform 0.2s cubic-bezier(0.2, 0, 0, 1),
-    opacity 0.15s ease;
-  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  transform: translateX(${(p) => (p.$open ? "0" : "100%")});
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+  overflow: hidden;
 `;
 
-const ResizeHandle = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 100%;
-  cursor: col-resize;
-  background: transparent;
-  z-index: 1;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.08);
-  }
-`;
+/* ────────────────────────────── Header ────────────────────────────── */
 
 const Header = styled.div`
-  height: 52px;
-  min-height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px 0 16px;
+  height: 52px;
+  padding: 0 12px;
+  flex-shrink: 0;
   background: linear-gradient(
     17.61deg,
     rgb(0, 12, 121) 5.31%,
@@ -77,22 +62,27 @@ const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-left: 4px;
 `;
 
 const HeaderTitle = styled.span`
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
   color: #ffffff;
 `;
 
 const BetaBadge = styled.span`
-  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-inter), "Inter", sans-serif;
   font-weight: 600;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   background: rgba(255, 255, 255, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 1px 6px;
+  border-radius: 10px;
   color: #ffffff;
 `;
 
@@ -102,7 +92,7 @@ const HeaderRight = styled.div`
   gap: 4px;
 `;
 
-const HeaderButton = styled.button`
+const HeaderIconButton = styled.button`
   width: 32px;
   height: 32px;
   display: flex;
@@ -110,154 +100,209 @@ const HeaderButton = styled.button`
   justify-content: center;
   background: none;
   border: none;
-  color: #ffffff;
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
-  border-radius: 6px;
-  transition: opacity 0.15s ease;
+  border-radius: 4px;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    opacity: 1;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
   }
 `;
 
-const Body = styled.div<DimProps>`
+/* ────────────────────────────── Body ────────────────────────────── */
+
+const Body = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 24px 24px 0;
+`;
+
+const WelcomeWave = styled.div`
+  font-size: 20px;
+  margin-bottom: 6px;
 `;
 
 const WelcomeHeading = styled.h2<DimProps>`
-  font-size: 17px;
+  font-family: var(--font-inter), "Inter", sans-serif;
   font-weight: 600;
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: -0.15px;
   color: ${({ $dims }) => $dims.textPrimary};
-  margin: 0 0 4px 0;
+  margin: 0 0 2px;
 `;
 
 const WelcomeSub = styled.p<DimProps>`
-  font-size: 13px;
-  color: ${({ $dims }) => $dims.textSecondary};
-  margin: 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: -0.15px;
+  color: ${({ $dims }) => $dims.textPrimary};
+  margin: 0 0 20px;
 `;
 
-const GetStartedLink = styled.a<DimProps>`
+const GradientLink = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 12px;
+  background: linear-gradient(
+    14.13deg,
+    rgb(0, 12, 121) 5.31%,
+    rgb(10, 78, 235) 26.68%,
+    rgb(0, 105, 255) 48.05%,
+    rgb(198, 174, 255) 96.08%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  border: none;
+  padding: 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
   font-size: 13px;
-  font-weight: 500;
-  color: ${({ $dims }) => $dims.accent};
+  line-height: 1.4;
   cursor: pointer;
-  text-decoration: none;
+  margin-bottom: 24px;
+
   &:hover {
     text-decoration: underline;
+    text-decoration-color: rgb(10, 78, 235);
   }
+`;
+
+const SectionLabel = styled.h3<DimProps>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: ${({ $dims }) => $dims.textMuted};
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 `;
 
 const PromptStack = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 24px;
 `;
 
 const PromptCard = styled.button<DimProps>`
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border: 1px solid ${({ $dims }) => $dims.borderLight};
-  border-radius: 8px;
-  background: transparent;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid
+    ${({ $dims }) =>
+      $dims.surfaceBg === "#ffffff" ? "#f3f4f6" : $dims.borderLight};
+  background: ${({ $dims }) => $dims.surfaceBg};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
   font-size: 13px;
+  line-height: 1.4;
   color: ${({ $dims }) => $dims.textPrimary};
   cursor: pointer;
   text-align: left;
-  line-height: 1.4;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
+  transition: border-color 0.15s ease, background 0.15s ease;
 
   &:hover {
     border-color: ${({ $dims }) => $dims.accent};
-    background: ${({ $dims }) => $dims.accent}0a;
+    background: ${({ $dims }) => $dims.accent}08;
   }
 `;
 
-const SparkleIcon = styled.span<DimProps>`
+const PromptIcon = styled.span<DimProps>`
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
-  color: ${({ $dims }) => $dims.accent};
+  color: #5b6987;
 `;
 
-const Footer = styled.div<DimProps>`
-  border-top: 1px solid ${({ $dims }) => $dims.borderLight};
-  padding: 12px 16px;
+/* ────────────────────────────── Footer ────────────────────────────── */
+
+const Footer = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 16px;
+  margin-top: 16px;
 `;
 
-const TextareaWrapper = styled.div`
-  position: relative;
+const InputBox = styled.div<DimProps>`
+  display: flex;
+  flex-direction: column;
+  border: 1px solid
+    ${({ $dims }) =>
+      $dims.surfaceBg === "#ffffff" ? "#f3f4f6" : $dims.borderLight};
+  border-radius: 4px;
+  padding: 12px;
+  height: 90px;
+  background: ${({ $dims }) => $dims.surfaceBg};
+
+  &:focus-within {
+    border-color: ${({ $dims }) => $dims.accent};
+  }
 `;
 
 const Textarea = styled.textarea<DimProps>`
-  width: 100%;
-  height: 60px;
+  flex: 1;
+  border: none;
+  outline: none;
   resize: none;
-  border: 1px solid ${({ $dims }) => $dims.borderLight};
-  border-radius: 8px;
-  padding: 10px 40px 10px 12px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
   font-size: 13px;
   line-height: 1.5;
-  font-family: inherit;
   color: ${({ $dims }) => $dims.textPrimary};
-  background: ${({ $dims }) => $dims.surfaceBg};
-  outline: none;
-  box-sizing: border-box;
-  transition: border-color 0.15s ease;
+  background: transparent;
 
   &::placeholder {
     color: ${({ $dims }) => $dims.textMuted};
   }
+`;
 
-  &:focus {
-    border-color: ${({ $dims }) => $dims.accent};
-  }
+const InputActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
 `;
 
 const SendButton = styled.button<DimProps>`
-  position: absolute;
-  right: 6px;
-  bottom: 6px;
-  width: 32px;
-  height: 32px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: none;
+  width: 30px;
+  height: 30px;
   border: none;
+  border-radius: 6px;
+  background: ${({ $dims }) => $dims.accent}14;
   color: ${({ $dims }) => $dims.accent};
   cursor: pointer;
-  border-radius: 6px;
-  transition: opacity 0.15s ease;
+  transition: background 0.15s ease;
 
   &:hover {
-    opacity: 0.8;
+    background: ${({ $dims }) => $dims.accent}24;
   }
 `;
 
 const Disclaimer = styled.p<DimProps>`
-  font-size: 10px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.4;
   color: ${({ $dims }) => $dims.textMuted};
   text-align: center;
-  margin: 8px 0 0 0;
-  line-height: 1.4;
+  margin: 0;
 `;
 
-/* ------------------------------------------------------------------ */
-/*  Suggested prompts                                                 */
-/* ------------------------------------------------------------------ */
+/* ─────────────────────────────────────────────────────────────────── */
 
 const SUGGESTED_PROMPTS = [
   "Why is my bill higher this month?",
@@ -265,10 +310,6 @@ const SUGGESTED_PROMPTS = [
   "Get help from our Support team",
   "How do I build a WordPress website?",
 ];
-
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
 
 interface AssistantPanelProps {
   open: boolean;
@@ -282,75 +323,80 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
   dims,
 }) => {
   const [query, setQuery] = useState("");
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const handleMinimize = useCallback(() => {
-    onClose();
-  }, [onClose]);
+  const handleMinimize = useCallback(() => onClose(), [onClose]);
 
   return (
-    <Wrapper $open={open} $dims={dims} ref={wrapperRef}>
-      <ResizeHandle />
-
-      {/* Header */}
-      <Header>
-        <HeaderLeft>
-          <HeaderTitle>AI Assistant</HeaderTitle>
-          <BetaBadge>Beta</BetaBadge>
-        </HeaderLeft>
-        <HeaderRight>
-          <HeaderButton onClick={handleMinimize} aria-label="Minimize">
-            {icons.minimize}
-          </HeaderButton>
-          <HeaderButton onClick={onClose} aria-label="Close">
-            {icons.close}
-          </HeaderButton>
-        </HeaderRight>
-      </Header>
-
-      {/* Body */}
-      <Body $dims={dims}>
-        <WelcomeHeading $dims={dims}>
-          👋 I&rsquo;m your DigitalOcean AI Assistant.
-        </WelcomeHeading>
-        <WelcomeSub $dims={dims}>What can I help you with?</WelcomeSub>
-        <GetStartedLink $dims={dims} role="button" tabIndex={0}>
-          Get started →
-        </GetStartedLink>
-
-        <PromptStack>
-          {SUGGESTED_PROMPTS.map((prompt) => (
-            <PromptCard
-              key={prompt}
-              $dims={dims}
-              onClick={() => setQuery(prompt)}
+    <Gutter $open={open} aria-hidden={!open}>
+      <Panel $open={open} $surface={dims.surfaceBg}>
+        <Header>
+          <HeaderLeft>
+            <HeaderTitle>AI Assistant</HeaderTitle>
+            <BetaBadge>Beta</BetaBadge>
+          </HeaderLeft>
+          <HeaderRight>
+            <HeaderIconButton
+              onClick={handleMinimize}
+              aria-label="Minimize"
+              type="button"
             >
-              <SparkleIcon $dims={dims}>{icons.sparkle}</SparkleIcon>
-              {prompt}
-            </PromptCard>
-          ))}
-        </PromptStack>
-      </Body>
+              {icons.minimize}
+            </HeaderIconButton>
+            <HeaderIconButton
+              onClick={onClose}
+              aria-label="Close"
+              type="button"
+            >
+              {icons.close}
+            </HeaderIconButton>
+          </HeaderRight>
+        </Header>
 
-      {/* Footer */}
-      <Footer $dims={dims}>
-        <TextareaWrapper>
-          <Textarea
-            $dims={dims}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ask me anything..."
-          />
-          <SendButton $dims={dims} aria-label="Send">
-            {icons.send}
-          </SendButton>
-        </TextareaWrapper>
-        <Disclaimer $dims={dims}>
-          Powered by OpenAI GPT-4o. By using this copilot, you agree to share
-          your data with it. Do not share sensitive information.
-        </Disclaimer>
-      </Footer>
-    </Wrapper>
+        <Body>
+          <WelcomeWave>👋</WelcomeWave>
+          <WelcomeHeading $dims={dims}>
+            I&rsquo;m your DigitalOcean AI Assistant.
+          </WelcomeHeading>
+          <WelcomeSub $dims={dims}>What can I help you with?</WelcomeSub>
+          <GradientLink type="button">Get started →</GradientLink>
+
+          <SectionLabel $dims={dims}>Suggested</SectionLabel>
+          <PromptStack>
+            {SUGGESTED_PROMPTS.map((prompt) => (
+              <PromptCard
+                key={prompt}
+                $dims={dims}
+                onClick={() => setQuery(prompt)}
+                type="button"
+              >
+                <PromptIcon $dims={dims}>{icons.sparkle}</PromptIcon>
+                {prompt}
+              </PromptCard>
+            ))}
+          </PromptStack>
+        </Body>
+
+        <Footer>
+          <InputBox $dims={dims}>
+            <Textarea
+              $dims={dims}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Ask me anything..."
+            />
+            <InputActions>
+              <SendButton $dims={dims} aria-label="Send" type="button">
+                {icons.send}
+              </SendButton>
+            </InputActions>
+          </InputBox>
+          <Disclaimer $dims={dims}>
+            Powered by OpenAI GPT-4o. By using this copilot, you agree to share
+            your data with it. Do not share sensitive information.
+          </Disclaimer>
+        </Footer>
+      </Panel>
+    </Gutter>
   );
 };
 

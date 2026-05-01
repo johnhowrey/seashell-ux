@@ -7,13 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import MainContent from "@/components/MainContent";
 import AssistantPanel from "@/components/AssistantPanel";
-import {
-  ShellVariant,
-  ColorMode,
-  shellVariants,
-  colorModes,
-  ShellDims,
-} from "@/lib/theme";
+import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
 import { icons } from "@/lib/icons";
 import AccessibilityModal from "@/components/AccessibilityModal";
 
@@ -230,28 +224,6 @@ const BackLink = styled.div`
     }
   }
 `;
-
-function getMergedDims(
-  variant: ShellVariant,
-  colorMode: ColorMode
-): ShellDims {
-  const base = shellVariants[variant].dims;
-  if (variant === "floating") return base;
-
-  const cm = colorModes[colorMode];
-  return {
-    ...base,
-    contentBg: cm.bg,
-    surfaceBg: cm.surface,
-    textPrimary: cm.text,
-    borderLight: cm.border,
-    accent: cm.accent,
-    headerBg: variant === "zen" ? cm.accent : cm.surface,
-    sidebarBg: cm.surface,
-    textSecondary: colorMode === "dark" ? "#a0a0a8" : "#555555",
-    textMuted: colorMode === "dark" ? "#666670" : "#999999",
-  };
-}
 
 export default function ModalLargePage() {
   const [variant, setVariant] = useState<ShellVariant>("standard");

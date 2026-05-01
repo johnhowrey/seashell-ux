@@ -159,6 +159,41 @@ export const colorModes: Record<
   },
 };
 
+export function getMergedDims(
+  variant: ShellVariant,
+  colorMode: ColorMode
+): ShellDims {
+  const base = shellVariants[variant].dims;
+  const cm = colorModes[colorMode];
+
+  // Floating gets a darker neutral canvas regardless of color mode.
+  const floatingCanvas = "#0e0e14";
+  const isFloating = variant === "floating";
+  const isDarkSurface = colorMode === "dark";
+
+  const surface = isFloating
+    ? colorMode === "dark"
+      ? "#1e1e24"
+      : "#1e1e24"
+    : cm.surface;
+  const contentBg = isFloating ? floatingCanvas : cm.bg;
+
+  return {
+    ...base,
+    contentBg,
+    surfaceBg: surface,
+    sidebarBg: surface,
+    headerBg: variant === "zen" ? cm.accent : surface,
+    borderLight: isFloating ? "#2a2a32" : cm.border,
+    textPrimary: isFloating ? "#e8e8ec" : cm.text,
+    textSecondary:
+      isFloating || isDarkSurface ? "#a0a0a8" : "#555555",
+    textMuted: isFloating || isDarkSurface ? "#666670" : "#999999",
+    accent: cm.accent,
+    accentHover: base.accentHover,
+  };
+}
+
 export const accessibilityDescriptor = "Motion, contrast, fonts, focus, and more.";
 
 export const accessibilityOptions = [
