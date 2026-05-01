@@ -40,30 +40,33 @@ const PageScroll = styled.div<{ $bg: string }>`
 `;
 
 /* ─── Hero ─── */
+// Live source: solid navy `rgb(0, 12, 54)` background, no gradients.
+// Hero is ~618px tall on the live site at 1440x900.
 const Hero = styled.section`
   position: relative;
-  background: radial-gradient(
-    ellipse at 20% 30%,
-    rgba(99, 102, 241, 0.6) 0%,
-    rgba(15, 23, 42, 0) 60%
-  ), radial-gradient(
-    ellipse at 80% 70%,
-    rgba(124, 58, 237, 0.45) 0%,
-    rgba(15, 23, 42, 0) 55%
-  ), linear-gradient(180deg, #0e1226 0%, #161a35 100%);
+  background: rgb(0, 12, 54);
   color: #ffffff;
-  padding: 24px 40px 80px;
-  overflow: hidden;
+  padding: 28px 56px 100px;
+  min-height: 618px;
+  overflow: visible;
 `;
-const HeroBottomCurve = styled.div<{ $bg: string }>`
+
+// Wave divider — verbatim path from the live source's hero footer.
+// preserveAspectRatio: xMidYMax slice keeps the wave anchored to the bottom
+// edge while stretching to full width.
+const HeroWave = styled.svg<{ $fill: string }>`
   position: absolute;
   bottom: -1px;
   left: 0;
   right: 0;
-  height: 60px;
-  background: ${(p) => p.$bg};
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  transform: scaleX(1.4);
+  width: 100%;
+  height: 40px;
+  display: block;
+  pointer-events: none;
+
+  path {
+    fill: ${(p) => p.$fill};
+  }
 `;
 
 const HeroTopBar = styled.div`
@@ -845,7 +848,14 @@ export default function PlaygroundPage() {
                 </CapStack>
               </HeroGrid>
 
-              <HeroBottomCurve $bg={dims.contentBg} />
+              <HeroWave
+                viewBox="0 0 1440 40"
+                preserveAspectRatio="xMidYMax slice"
+                xmlns="http://www.w3.org/2000/svg"
+                $fill={dims.contentBg}
+              >
+                <path d="M0 40V26C12 17 24 12 36 12s24 5 36 14 24 14 36 14 24-5 36-14S168 12 180 12s24 5 36 14 24 14 36 14 24-5 36-14S312 12 324 12s24 5 36 14 24 14 36 14 24-5 36-14S456 12 468 12s24 5 36 14 24 14 36 14 24-5 36-14S600 12 612 12s24 5 36 14 24 14 36 14 24-5 36-14S744 12 756 12s24 5 36 14 24 14 36 14 24-5 36-14S888 12 900 12s24 5 36 14 24 14 36 14 24-5 36-14S1032 12 1044 12s24 5 36 14 24 14 36 14 24-5 36-14S1176 12 1188 12s24 5 36 14 24 14 36 14 24-5 36-14S1320 12 1332 12s24 5 36 14 24 14 36 14 24-5 36-14V40H0z" />
+              </HeroWave>
             </Hero>
 
             {/* TABS + chat */}
