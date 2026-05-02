@@ -8,7 +8,7 @@ import MainContent from "@/components/MainContent";
 import AssistantPanel from "@/components/AssistantPanel";
 import NotificationsPanel from "@/components/NotificationsPanel";
 import AccessibilityModal from "@/components/AccessibilityModal";
-import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
+import { ShellVariant, ColorMode, getMergedDims, MOBILE_MEDIA } from "@/lib/theme";
 import "./globals.css";
 
 const ShellContainer = styled.div<{
@@ -27,6 +27,12 @@ const ShellContainer = styled.div<{
     padding: ${p.$gap}px;
     gap: ${p.$gap}px;
   `}
+
+  @media ${MOBILE_MEDIA} {
+    padding: 0;
+    gap: 0;
+    height: 100dvh;
+  }
 `;
 
 const MainArea = styled.div<{ $radius: number }>`
@@ -40,6 +46,10 @@ const MainArea = styled.div<{ $radius: number }>`
     border-radius: ${p.$radius}px;
     overflow: hidden;
   `}
+
+  @media ${MOBILE_MEDIA} {
+    border-radius: 0;
+  }
 `;
 
 const ContentRow = styled.div`
@@ -57,6 +67,7 @@ export default function Page() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [a11yOpen, setA11yOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const dims = getMergedDims(variant, colorMode);
 
@@ -68,6 +79,8 @@ export default function Page() {
     () => setNotificationsOpen((p) => !p),
     []
   );
+  const openMobileNav = useCallback(() => setMobileNavOpen(true), []);
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
 
   const toggleA11y = useCallback((id: string) => {
     setActiveA11y((prev) =>
@@ -105,6 +118,8 @@ export default function Page() {
         onOpenAssistant={() => setAssistantOpen(true)}
         onToggleNotifications={toggleNotifications}
         notificationsOpen={notificationsOpen}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={closeMobileNav}
       />
       <NotificationsPanel
         open={notificationsOpen}
@@ -119,6 +134,7 @@ export default function Page() {
           assistantOpen={assistantOpen}
           onToggleNotifications={toggleNotifications}
           notificationsOpen={notificationsOpen}
+          onOpenMobileNav={openMobileNav}
         />
         <ContentRow>
           <MainContent

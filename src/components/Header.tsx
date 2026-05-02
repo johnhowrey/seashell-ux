@@ -10,6 +10,7 @@ import {
   searchRecentlyViewed,
   searchRecentlyCreated,
   breadcrumbPopovers,
+  MOBILE_MEDIA,
 } from "../lib/theme";
 import { icons } from "../lib/icons";
 
@@ -22,6 +23,8 @@ interface HeaderProps {
   onToggleNotifications?: () => void;
   notificationsOpen?: boolean;
   breadcrumbs?: string[];
+  // Mobile-only: opens the sidebar drawer.
+  onOpenMobileNav?: () => void;
 }
 
 interface HasDims {
@@ -55,6 +58,365 @@ const Container = styled.header<HasDims>`
       margin: ${$dims.gap}px ${$dims.gap}px 0 ${$dims.gap}px;
       border: 1px solid ${$dims.borderLight};
     `}
+
+  @media ${MOBILE_MEDIA} {
+    /* Per-variant mobile tuning. Standard / Floating use a roomy 56px
+       header for thumb-friendly tap targets. Compact stays denser at
+       48px with tighter padding (its DNA is density). Zen keeps the
+       accent header so the brand-bar identity carries to mobile. */
+    height: ${({ $variant }) => ($variant === "compact" ? "48px" : "56px")};
+    padding-left: 8px;
+    padding-right: 8px;
+    margin: 0;
+    border-radius: 0;
+    border-bottom: ${({ $variant, $dims }) =>
+      $variant === "zen" ? "none" : `1px solid ${$dims.borderLight}`};
+    background: ${({ $variant, $dims }) =>
+      $variant === "zen" ? $dims.accent : $dims.headerBg};
+  }
+`;
+
+// Hamburger that opens the sidebar drawer on mobile. Hidden on desktop —
+// the sidebar is always visible there (or the existing Zen header
+// already provides its own hamburger replacement).
+const MobileNavTrigger = styled.button<HasDims>`
+  display: none;
+
+  @media ${MOBILE_MEDIA} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: ${({ $variant, $dims }) =>
+      $variant === "zen" ? "#ffffff" : $dims.textPrimary};
+    flex-shrink: 0;
+
+    &:active {
+      background: ${({ $variant }) =>
+        $variant === "zen" ? "rgba(255,255,255,0.16)" : "rgba(0,0,0,0.05)"};
+    }
+  }
+`;
+
+// Wrapper for elements that should hide on mobile (the desktop back arrow,
+// inline search input, etc.) without nuking their desktop styles.
+const DesktopOnly = styled.div`
+  display: contents;
+
+  @media ${MOBILE_MEDIA} {
+    display: none;
+  }
+`;
+
+// Mobile-only: shows ONLY the last breadcrumb segment as the page title
+// in the header. Tap to open a popover with the full trail.
+const MobileTitle = styled.button<HasDims & { $expanded: boolean }>`
+  display: none;
+
+  @media ${MOBILE_MEDIA} {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    padding: 0 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-inter), "Inter", sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: ${({ $variant, $dims }) =>
+      $variant === "zen" ? "#ffffff" : $dims.textPrimary};
+    text-align: left;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    svg {
+      flex-shrink: 0;
+      transform: rotate(${(p) => (p.$expanded ? "180deg" : "0")});
+      transition: transform 0.15s ease;
+      opacity: 0.55;
+    }
+  }
+`;
+
+// Trail popover anchored under the mobile title — full breadcrumb stack.
+const MobileTrailPopover = styled.div<{ $surface: string; $border: string }>`
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 12px;
+  right: 12px;
+  background: ${(p) => p.$surface};
+  border: 1px solid ${(p) => p.$border};
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  padding: 6px;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MobileTrailItem = styled.button<{ $color: string; $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: ${(p) => (p.$active ? "rgba(0,97,235,0.08)" : "none")};
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: ${(p) => (p.$active ? 600 : 500)};
+  font-size: 14px;
+  color: ${(p) => p.$color};
+  cursor: pointer;
+  text-align: left;
+
+  &:active {
+    background: rgba(0, 97, 235, 0.08);
+  }
+`;
+
+const MobileTrailIndent = styled.span<{ $depth: number }>`
+  display: inline-block;
+  width: ${(p) => p.$depth * 12}px;
+  flex-shrink: 0;
+`;
+
+const MobileTrailMark = styled.span<{ $color: string }>`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${(p) => p.$color};
+  flex-shrink: 0;
+`;
+
+// Mobile icon-button cluster on the right side of the header. Each button
+// is 40x40 (≥40px tap target). Replaces the desktop Create / Search /
+// Assistant trio when narrow.
+const MobileIconRow = styled.div`
+  display: none;
+
+  @media ${MOBILE_MEDIA} {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+`;
+
+const MobileIconButton = styled.button<HasDims & { $accent?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: ${({ $variant }) => ($variant === "compact" ? "40px" : "44px")};
+  height: ${({ $variant }) => ($variant === "compact" ? "40px" : "44px")};
+  background: ${({ $accent, $dims, $variant }) =>
+    $accent
+      ? $variant === "zen"
+        ? "rgba(255,255,255,0.18)"
+        : $dims.createBg
+      : "none"};
+  color: ${({ $accent, $variant, $dims }) =>
+    $accent
+      ? "#ffffff"
+      : $variant === "zen"
+      ? "#ffffff"
+      : $dims.textPrimary};
+  border: none;
+  border-radius: ${({ $variant }) =>
+    $variant === "compact"
+      ? "6px"
+      : $variant === "floating"
+      ? "10px"
+      : "8px"};
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:active {
+    filter: brightness(0.94);
+  }
+`;
+
+const MobileAssistantIconButton = styled(MobileIconButton)`
+  background: linear-gradient(
+    17.61deg,
+    rgb(0, 12, 121) 5.31%,
+    rgb(10, 78, 235) 26.68%,
+    rgb(0, 105, 255) 48.05%,
+    rgb(198, 174, 255) 96.08%
+  );
+  color: #ffffff;
+`;
+
+// Full-screen search overlay opened by the mobile search icon.
+const MobileSearchOverlay = styled.div<{ $surface: string; $border: string }>`
+  position: fixed;
+  inset: 0;
+  background: ${(p) => p.$surface};
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MobileSearchHead = styled.div<{ $border: string }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid ${(p) => p.$border};
+  flex-shrink: 0;
+`;
+
+const MobileSearchClose = styled.button<HasDims>`
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: ${({ $dims }) => $dims.textPrimary};
+  flex-shrink: 0;
+
+  &:active {
+    background: rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const MobileSearchInput = styled.input<HasDims>`
+  flex: 1;
+  height: 44px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 16px;
+  color: ${({ $dims }) => $dims.textPrimary};
+
+  &::placeholder {
+    color: ${({ $dims }) => $dims.textMuted};
+  }
+`;
+
+const MobileSearchScroll = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 32px;
+`;
+
+// Bottom-sheet Create menu for mobile. Slides up from the bottom edge.
+const MobileSheetBackdrop = styled.button<{ $open: boolean }>`
+  display: none;
+
+  @media ${MOBILE_MEDIA} {
+    display: ${(p) => (p.$open ? "block" : "none")};
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 18, 28, 0.45);
+    border: none;
+    padding: 0;
+    z-index: 190;
+    cursor: pointer;
+  }
+`;
+
+const MobileSheet = styled.div<{ $surface: string; $open: boolean }>`
+  display: none;
+
+  @media ${MOBILE_MEDIA} {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 80vh;
+    background: ${(p) => p.$surface};
+    z-index: 200;
+    flex-direction: column;
+    border-radius: 16px 16px 0 0;
+    transform: translateY(${(p) => (p.$open ? "0" : "100%")});
+    transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+  }
+`;
+
+const MobileSheetGrabber = styled.div<{ $color: string }>`
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: ${(p) => p.$color};
+  margin: 8px auto 4px;
+  flex-shrink: 0;
+`;
+
+const MobileSheetTitle = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: ${(p) => p.$color};
+  padding: 8px 20px 12px;
+  flex-shrink: 0;
+`;
+
+const MobileSheetScroll = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 24px;
+`;
+
+const MobileSheetRow = styled.button<{ $color: string; $border: string }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 52px;
+  padding: 0 20px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid ${(p) => p.$border};
+  cursor: pointer;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: ${(p) => p.$color};
+  text-align: left;
+
+  &:active {
+    background: rgba(0, 0, 0, 0.04);
+  }
+`;
+
+const MobileSheetBackBar = styled.button<{ $color: string }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: ${(p) => p.$color};
+  text-align: left;
+  flex-shrink: 0;
 `;
 
 /* ──────────────────────────── Breadcrumbs ──────────────────────────── */
@@ -782,14 +1144,19 @@ function Header({
   onToggleNotifications,
   notificationsOpen,
   breadcrumbs = DEFAULT_BREADCRUMBS,
+  onOpenMobileNav,
 }: HeaderProps) {
+  void onToggleNotifications;
+  void notificationsOpen;
   const searchRef = useRef<HTMLInputElement>(null);
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
   const searchAnchorRef = useRef<HTMLDivElement>(null);
   const searchWrapRef = useRef<HTMLDivElement>(null);
   const createAnchorRef = useRef<HTMLDivElement>(null);
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const flyoutRef = useRef<HTMLDivElement>(null);
   const crumbAnchorRef = useRef<HTMLDivElement>(null);
+  const mobileTrailRef = useRef<HTMLDivElement>(null);
 
   const [isMac, setIsMac] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -801,6 +1168,38 @@ function Header({
   const [openCrumb, setOpenCrumb] = useState<number | null>(null);
   const [crumbWidth, setCrumbWidth] = useState(800);
   const [ellipsisOpen, setEllipsisOpen] = useState(false);
+
+  // Mobile-only state. The mobile chrome is a separate UX:
+  //   - Search is a full-screen overlay
+  //   - Create is a bottom sheet (two-step: category → item)
+  //   - Breadcrumbs collapse to last + popover with the full trail
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileCreateOpen, setMobileCreateOpen] = useState(false);
+  const [mobileCreateCat, setMobileCreateCat] = useState<string | null>(null);
+  const [mobileTrailOpen, setMobileTrailOpen] = useState(false);
+
+  // Lock body scroll while a full-screen mobile overlay is up.
+  useEffect(() => {
+    const lock = mobileSearchOpen || mobileCreateOpen;
+    if (!lock) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [mobileSearchOpen, mobileCreateOpen]);
+
+  // Auto-focus the mobile search input when its overlay opens.
+  useEffect(() => {
+    if (mobileSearchOpen) {
+      const t = setTimeout(() => mobileSearchRef.current?.focus(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [mobileSearchOpen]);
+
+  useOutsideClose(mobileTrailOpen, () => setMobileTrailOpen(false), [
+    mobileTrailRef,
+  ]);
 
   useEffect(() => {
     const mac =
@@ -1354,39 +1753,299 @@ function Header({
       </AssistantButton>
     );
 
+  // Mobile title shows the deepest crumb. Tapping it opens a popover with
+  // the full trail so the user can still navigate up.
+  const lastCrumb = breadcrumbs[breadcrumbs.length - 1] ?? "Home";
+
+  const onMobileTrailJump = (label: string) => {
+    setMobileTrailOpen(false);
+    const href = SEGMENT_LINKS[label];
+    if (href) window.location.href = href;
+  };
+
+  // Open the mobile create sheet rooted at category list.
+  const openMobileCreate = () => {
+    setMobileCreateCat(null);
+    setMobileCreateOpen(true);
+  };
+
+  const activeMobileCat = mobileCreateCat
+    ? createMenuItems.find((c) => c.label === mobileCreateCat)
+    : null;
+
   return (
-    <Container $variant={variant} $dims={dims}>
-      <BreadcrumbWrap>
-        {isZen ? (
-          <HamburgerButton
-            $variant={variant}
-            $dims={dims}
-            type="button"
-            aria-label="Open navigation"
-            onClick={() => onToggleNotifications?.()}
+    <>
+      <Container $variant={variant} $dims={dims}>
+        {/* Mobile-only hamburger (left edge) — opens sidebar drawer. */}
+        <MobileNavTrigger
+          $variant={variant}
+          $dims={dims}
+          type="button"
+          aria-label="Open navigation"
+          onClick={() => onOpenMobileNav?.()}
+        >
+          {icons.hamburger}
+        </MobileNavTrigger>
+
+        <BreadcrumbWrap>
+          <DesktopOnly>
+            {isZen ? (
+              <HamburgerButton
+                $variant={variant}
+                $dims={dims}
+                type="button"
+                aria-label="Open navigation"
+                onClick={() => onOpenMobileNav?.()}
+              >
+                {icons.hamburger}
+              </HamburgerButton>
+            ) : (
+              <BackButton
+                $variant={variant}
+                $dims={dims}
+                aria-label="Go back"
+                onClick={() => onBack?.()}
+                type="button"
+              >
+                {icons.arrowLeft}
+              </BackButton>
+            )}
+            {renderBreadcrumb()}
+          </DesktopOnly>
+
+          {/* Mobile title — last segment + chevron, opens trail popover. */}
+          <div
+            ref={mobileTrailRef}
+            style={{ position: "relative", flex: 1, minWidth: 0 }}
           >
-            {icons.hamburger}
-          </HamburgerButton>
-        ) : (
-          <BackButton
-            $variant={variant}
-            $dims={dims}
-            aria-label="Go back"
-            onClick={() => onBack?.()}
+            <MobileTitle
+              $variant={variant}
+              $dims={dims}
+              $expanded={mobileTrailOpen}
+              type="button"
+              onClick={() => setMobileTrailOpen((o) => !o)}
+              aria-expanded={mobileTrailOpen}
+              aria-haspopup="menu"
+            >
+              <span>{lastCrumb}</span>
+              {breadcrumbs.length > 1 && (
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M3.5 5L7 8.5 10.5 5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </MobileTitle>
+            {mobileTrailOpen && breadcrumbs.length > 1 && (
+              <MobileTrailPopover
+                $surface={dims.surfaceBg}
+                $border={dims.borderLight}
+                role="menu"
+              >
+                {breadcrumbs.map((label, i) => {
+                  const isLast = i === breadcrumbs.length - 1;
+                  return (
+                    <MobileTrailItem
+                      key={`${label}-${i}`}
+                      type="button"
+                      $color={isLast ? dims.accent : dims.textPrimary}
+                      $active={isLast}
+                      onClick={() => onMobileTrailJump(label)}
+                    >
+                      <MobileTrailIndent $depth={i} />
+                      <MobileTrailMark
+                        $color={isLast ? dims.accent : dims.textMuted}
+                      />
+                      {label}
+                    </MobileTrailItem>
+                  );
+                })}
+              </MobileTrailPopover>
+            )}
+          </div>
+        </BreadcrumbWrap>
+
+        <Actions $variant={variant} $dims={dims}>
+          <DesktopOnly>
+            {renderCreate()}
+            {renderSearch()}
+            {renderAssistant()}
+          </DesktopOnly>
+
+          <MobileIconRow>
+            <MobileIconButton
+              $variant={variant}
+              $dims={dims}
+              type="button"
+              aria-label="Search"
+              onClick={() => setMobileSearchOpen(true)}
+            >
+              {icons.searchSm}
+            </MobileIconButton>
+            <MobileIconButton
+              $variant={variant}
+              $dims={dims}
+              $accent
+              type="button"
+              aria-label="Create"
+              onClick={openMobileCreate}
+            >
+              {icons.plusBold}
+            </MobileIconButton>
+            <MobileAssistantIconButton
+              $variant={variant}
+              $dims={dims}
+              type="button"
+              aria-label="AI Assistant"
+              aria-pressed={assistantOpen}
+              onClick={onToggleAssistant}
+            >
+              {icons.sparkles}
+            </MobileAssistantIconButton>
+          </MobileIconRow>
+        </Actions>
+      </Container>
+
+      {/* Mobile full-screen search overlay. */}
+      {mobileSearchOpen && (
+        <MobileSearchOverlay
+          $surface={dims.surfaceBg}
+          $border={dims.borderLight}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search"
+        >
+          <MobileSearchHead $border={dims.borderLight}>
+            <MobileSearchClose
+              $variant={variant}
+              $dims={dims}
+              type="button"
+              aria-label="Close search"
+              onClick={() => {
+                setMobileSearchOpen(false);
+                setSearchValue("");
+              }}
+            >
+              {icons.arrowLeft}
+            </MobileSearchClose>
+            <MobileSearchInput
+              ref={mobileSearchRef}
+              $variant={variant}
+              $dims={dims}
+              type="text"
+              placeholder="Search Droplets, projects, docs…"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+          </MobileSearchHead>
+          <MobileSearchScroll>
+            {filtered.every((g) => g.items.length === 0) ? (
+              <NoResults>No matches</NoResults>
+            ) : (
+              filtered.map(
+                (group) =>
+                  group.items.length > 0 && (
+                    <React.Fragment key={group.title}>
+                      <SectionHeader>
+                        {group.title.toUpperCase()}
+                      </SectionHeader>
+                      {group.items.map((it) => (
+                        <ResultRow
+                          key={`m-${group.title}-${it.label}`}
+                          type="button"
+                          $highlighted={false}
+                          onClick={() => {
+                            setSearchValue(it.label);
+                            setMobileSearchOpen(false);
+                          }}
+                        >
+                          <ResultLabel>
+                            {highlight(it.label, searchValue)}
+                          </ResultLabel>
+                          {it.detail && (
+                            <ResultDetail>{it.detail}</ResultDetail>
+                          )}
+                        </ResultRow>
+                      ))}
+                    </React.Fragment>
+                  )
+              )
+            )}
+          </MobileSearchScroll>
+        </MobileSearchOverlay>
+      )}
+
+      {/* Mobile create bottom sheet — two-step (category → item). */}
+      <MobileSheetBackdrop
+        $open={mobileCreateOpen}
+        aria-label="Close create"
+        onClick={() => setMobileCreateOpen(false)}
+      />
+      <MobileSheet $surface={dims.surfaceBg} $open={mobileCreateOpen}>
+        <MobileSheetGrabber $color={dims.borderLight} />
+        {activeMobileCat ? (
+          <MobileSheetBackBar
+            $color={dims.textSecondary}
             type="button"
+            onClick={() => setMobileCreateCat(null)}
           >
             {icons.arrowLeft}
-          </BackButton>
+            <span>{activeMobileCat.label}</span>
+          </MobileSheetBackBar>
+        ) : (
+          <MobileSheetTitle $color={dims.textPrimary}>
+            Create
+          </MobileSheetTitle>
         )}
-        {renderBreadcrumb()}
-      </BreadcrumbWrap>
-
-      <Actions $variant={variant} $dims={dims}>
-        {renderCreate()}
-        {renderSearch()}
-        {renderAssistant()}
-      </Actions>
-    </Container>
+        <MobileSheetScroll>
+          {!activeMobileCat &&
+            createMenuItems.map((cat) => (
+              <MobileSheetRow
+                key={cat.label}
+                type="button"
+                $color={dims.textPrimary}
+                $border={dims.borderLight}
+                onClick={() => setMobileCreateCat(cat.label)}
+              >
+                {cat.label}
+                <span style={{ color: dims.textMuted, fontSize: 18 }}>›</span>
+              </MobileSheetRow>
+            ))}
+          {activeMobileCat &&
+            activeMobileCat.items.map((item) => {
+              const href = CREATE_LINKS[item.label];
+              return (
+                <MobileSheetRow
+                  key={item.label}
+                  type="button"
+                  $color={dims.textPrimary}
+                  $border={dims.borderLight}
+                  onClick={() => {
+                    setMobileCreateOpen(false);
+                    setMobileCreateCat(null);
+                    if (href) window.location.href = href;
+                  }}
+                >
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <Badge $variant={item.badge}>{item.badge}</Badge>
+                  )}
+                </MobileSheetRow>
+              );
+            })}
+        </MobileSheetScroll>
+      </MobileSheet>
+    </>
   );
 }
 

@@ -5,11 +5,16 @@ import Link from "next/link";
 import styled from "styled-components";
 import PageFrame from "@/components/PageFrame";
 import type { ShellDims } from "@/lib/theme";
+import { MOBILE_MEDIA } from "@/lib/theme";
 
 const Page = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 28px 40px 80px;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 16px 16px 56px;
+  }
 `;
 
 // "Hey, John. Hope your week's been going well." — small standup-style
@@ -46,6 +51,16 @@ const StandupLead = styled.h1<{ $color: string }>`
     text-decoration: underline;
     text-underline-offset: 4px;
     text-decoration-thickness: 1px;
+  }
+
+  @media ${MOBILE_MEDIA} {
+    font-size: 21px;
+    line-height: 1.32;
+    letter-spacing: -0.2px;
+    margin-bottom: 18px;
+    strong {
+      text-underline-offset: 3px;
+    }
   }
 `;
 
@@ -295,6 +310,11 @@ const FocusActions = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const FocusPrimaryBtn = styled.button<{ $accent: string }>`
@@ -308,6 +328,12 @@ const FocusPrimaryBtn = styled.button<{ $accent: string }>`
   border-radius: 7px;
   cursor: pointer;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
@@ -320,6 +346,12 @@ const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
   border: 1px solid ${(p) => p.$border};
   border-radius: 7px;
   cursor: pointer;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 // No outer card — rows just stack in flow.  Separation between rows is a
@@ -336,6 +368,12 @@ const ItemRow = styled.div<{ $border: string }>`
   padding: 16px 0;
   border-top: 1px solid ${(p) => p.$border};
   &:first-child { border-top: none; padding-top: 8px; }
+
+  @media ${MOBILE_MEDIA} {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 18px 0;
+  }
 `;
 
 const ItemChip = styled.span<{ $bg: string; $color: string }>`
@@ -352,6 +390,16 @@ const ItemChip = styled.span<{ $bg: string; $color: string }>`
   letter-spacing: 0.2px;
   text-align: center;
   white-space: nowrap;
+
+  @media ${MOBILE_MEDIA} {
+    /* In the stacked layout the chip is no longer a fixed-width column;
+       let it shrink to its label so it doesn't read as a full-width banner.
+       justify-self handles the inline axis in CSS Grid (align-self handles
+       the block axis), so this is the one that pulls the chip back to its
+       intrinsic width. */
+    justify-self: start;
+    align-self: flex-start;
+  }
 `;
 
 const ItemText = styled.div`
@@ -386,6 +434,12 @@ const ItemVerbLink = styled(Link)<{ $accent: string }>`
   text-decoration: none;
   white-space: nowrap;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    text-align: center;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
 `;
 
 const FocusMore = styled.details<{ $color: string }>`

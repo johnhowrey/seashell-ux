@@ -4,11 +4,16 @@ import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import PageFrame from "@/components/PageFrame";
+import { MOBILE_MEDIA } from "@/lib/theme";
 
 const Page = styled.div`
   max-width: 1380px;
   margin: 0 auto;
   padding: 24px 32px 80px;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 16px 16px 56px;
+  }
 `;
 
 const TopRow = styled.div`
@@ -18,6 +23,12 @@ const TopRow = styled.div`
   gap: 16px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
 `;
 
 const TitleGroup = styled.div`
@@ -45,6 +56,13 @@ const Actions = styled.div`
   display: flex;
   gap: 8px;
   align-items: center;
+
+  @media ${MOBILE_MEDIA} {
+    button {
+      flex: 1;
+      padding: 11px 12px;
+    }
+  }
 `;
 
 const PrimaryBtn = styled.button<{ $accent: string }>`
@@ -95,6 +113,15 @@ const FocusLead = styled.h2<{ $color: string }>`
     text-underline-offset: 4px;
     text-decoration-thickness: 1px;
   }
+
+  @media ${MOBILE_MEDIA} {
+    font-size: 21px;
+    line-height: 1.32;
+    letter-spacing: -0.2px;
+    strong {
+      text-underline-offset: 3px;
+    }
+  }
 `;
 
 // Inline AI-tool pill — gradient outline, monospace caps. Used to mark
@@ -141,6 +168,11 @@ const FocusActions = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const FocusPrimaryBtn = styled.button<{ $accent: string }>`
@@ -154,6 +186,12 @@ const FocusPrimaryBtn = styled.button<{ $accent: string }>`
   border-radius: 7px;
   cursor: pointer;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
@@ -166,6 +204,12 @@ const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
   border: 1px solid ${(p) => p.$border};
   border-radius: 7px;
   cursor: pointer;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 const FocusMore = styled.details<{ $color: string }>`
@@ -211,6 +255,12 @@ const ItemRow = styled.div<{ $border: string }>`
   padding: 16px 0;
   border-top: 1px solid ${(p) => p.$border};
   &:first-child { border-top: none; padding-top: 8px; }
+
+  @media ${MOBILE_MEDIA} {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 18px 0;
+  }
 `;
 
 const ItemChip = styled.span<{ $bg: string; $color: string }>`
@@ -227,6 +277,11 @@ const ItemChip = styled.span<{ $bg: string; $color: string }>`
   letter-spacing: 0.2px;
   text-align: center;
   white-space: nowrap;
+
+  @media ${MOBILE_MEDIA} {
+    justify-self: start;
+    align-self: flex-start;
+  }
 `;
 
 const ItemText = styled.div`
@@ -260,6 +315,12 @@ const ItemVerbBtn = styled.button<{ $accent: string }>`
   cursor: pointer;
   white-space: nowrap;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
 `;
 
 const BrowseAll = styled.details<{ $color: string }>`
@@ -280,6 +341,18 @@ const BrowseAll = styled.details<{ $color: string }>`
 
 const BrowseAllInner = styled.div`
   margin-top: 12px;
+
+  /* The dense table can't fit on a phone — let it scroll sideways inside
+     the disclosure rather than try to reflow into cards (a transient
+     fallback view that you reach by tapping "Browse all"). */
+  @media ${MOBILE_MEDIA} {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 12px -16px 0;
+    padding: 0 16px;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
 `;
 
 /* ─── Status banner ─── */

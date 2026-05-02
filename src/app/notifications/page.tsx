@@ -7,12 +7,17 @@ import {
   notifications,
   notificationCategoryColors,
   NotifType,
+  MOBILE_MEDIA,
 } from "@/lib/theme";
 
 const Page = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 24px 32px 80px;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 16px 16px 56px;
+  }
 `;
 
 const TopRow = styled.div`
@@ -21,6 +26,12 @@ const TopRow = styled.div`
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
 `;
 
 const TitleGroup = styled.div`
@@ -788,6 +799,15 @@ const FocusLead = styled.h2<{ $color: string }>`
     text-underline-offset: 4px;
     text-decoration-thickness: 1px;
   }
+
+  @media ${MOBILE_MEDIA} {
+    font-size: 20px;
+    line-height: 1.32;
+    letter-spacing: -0.2px;
+    strong {
+      text-underline-offset: 3px;
+    }
+  }
 `;
 
 const InboxConfidencePill = styled.span<{ $bg: string; $color: string }>`
@@ -818,6 +838,11 @@ const FocusActions = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const FocusPrimaryBtn = styled.button<{ $accent: string }>`
@@ -831,6 +856,12 @@ const FocusPrimaryBtn = styled.button<{ $accent: string }>`
   border-radius: 7px;
   cursor: pointer;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
@@ -843,6 +874,12 @@ const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
   border: 1px solid ${(p) => p.$border};
   border-radius: 7px;
   cursor: pointer;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 // Rows stack with hairline dividers; no wrapping card.
@@ -856,6 +893,15 @@ const ItemRow = styled.div<{ $border: string }>`
   padding: 16px 0;
   border-top: 1px solid ${(p) => p.$border};
   &:first-child { border-top: none; padding-top: 8px; }
+
+  @media ${MOBILE_MEDIA} {
+    /* Reorder: text first, then primary verb (full-width), then snooze.
+       The 92px verb column collapses; on a phone the action button
+       deserves its own line so it's tappable. */
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 18px 0;
+  }
 `;
 
 const ItemVerb = styled.button<{ $accent: string }>`
@@ -871,10 +917,24 @@ const ItemVerb = styled.button<{ $accent: string }>`
   cursor: pointer;
   text-align: center;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    /* Stack order: place primary verb after the text (which lives in
+       grid order naturally — but in the desktop layout the verb is the
+       first child, so we push it to the bottom on mobile). */
+    order: 2;
+  }
 `;
 
 const ItemText = styled.div`
   min-width: 0;
+
+  @media ${MOBILE_MEDIA} {
+    order: 1;
+  }
 `;
 
 const ItemHeading = styled.div<{ $color: string }>`
@@ -914,6 +974,13 @@ const ItemSnooze = styled.button<{ $color: string }>`
   cursor: pointer;
   padding: 4px 8px;
   &:hover { text-decoration: underline; }
+
+  @media ${MOBILE_MEDIA} {
+    order: 3;
+    align-self: center;
+    padding: 12px;
+    font-size: 13px;
+  }
 `;
 
 const QueueCard = styled.div<{ $surface: string; $border: string }>`

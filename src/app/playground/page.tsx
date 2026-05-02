@@ -6,7 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import AssistantPanel from "@/components/AssistantPanel";
 import NotificationsPanel from "@/components/NotificationsPanel";
-import { ShellVariant, ColorMode, getMergedDims } from "@/lib/theme";
+import { ShellVariant, ColorMode, getMergedDims, MOBILE_MEDIA } from "@/lib/theme";
 import { icons } from "@/lib/icons";
 
 /* ─── Shell ─── */
@@ -17,6 +17,12 @@ const ShellContainer = styled.div<{ $gap: number; $bg: string; $radius: number }
   overflow: hidden;
   background: ${(p) => p.$bg};
   ${(p) => p.$gap > 0 && `padding: ${p.$gap}px; gap: ${p.$gap}px;`}
+
+  @media ${MOBILE_MEDIA} {
+    padding: 0;
+    gap: 0;
+    height: 100dvh;
+  }
 `;
 const MainArea = styled.div<{ $radius: number }>`
   display: flex;
@@ -24,6 +30,10 @@ const MainArea = styled.div<{ $radius: number }>`
   flex: 1;
   min-width: 0;
   ${(p) => p.$radius > 0 && `border-radius: ${p.$radius}px; overflow: hidden;`}
+
+  @media ${MOBILE_MEDIA} {
+    border-radius: 0;
+  }
 `;
 const ContentRow = styled.div`
   position: relative;
@@ -49,6 +59,11 @@ const Hero = styled.section`
   padding: 28px 56px 100px;
   min-height: 618px;
   overflow: visible;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 20px 20px 80px;
+    min-height: 0;
+  }
 `;
 
 // Wave divider — verbatim path from the live source's hero footer.
@@ -115,6 +130,13 @@ const HeroH1 = styled.h1`
   margin: 0 0 24px;
   max-width: 580px;
   animation: ${fadeIn} 0.4s ease;
+
+  @media ${MOBILE_MEDIA} {
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -0.6px;
+    margin-bottom: 18px;
+  }
 `;
 const HeroLead = styled.p`
   font-family: var(--font-inter), "Inter", sans-serif;
@@ -223,6 +245,10 @@ const CapDesc = styled.span`
 const ContentSection = styled.div<{ $bg: string }>`
   background: ${(p) => p.$bg};
   padding: 0 40px 64px;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 0 16px 48px;
+  }
 `;
 const TabsRow = styled.div<{ $border: string }>`
   display: flex;
@@ -265,6 +291,12 @@ const ChatHeader = styled.div<{ $border: string }>`
   gap: 24px;
   padding: 20px 24px;
   border-bottom: 1px solid ${(p) => p.$border};
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
 `;
 const ChatTitleBlock = styled.div`
   display: flex;
@@ -468,6 +500,13 @@ const DeployCard = styled.div<{ $surface: string; $border: string }>`
   border: 1px solid ${(p) => p.$border};
   border-radius: 12px;
   margin-top: 16px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
 `;
 const DeployLeft = styled.div`
   display: flex;
@@ -490,6 +529,17 @@ const DeployRight = styled.div`
   display: flex;
   align-items: center;
   gap: 18px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 14px;
+    }
+  }
 `;
 const DeployCost = styled.div<{ $color: string }>`
   font-family: var(--font-inter), "Inter", sans-serif;
@@ -714,6 +764,7 @@ export default function PlaygroundPage() {
   const [colorMode] = useState<ColorMode>("light");
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [tab, setTab] = useState<"playground" | "quickstart">("playground");
   const [titleIdx, setTitleIdx] = useState(0);
   const [modelIdx, setModelIdx] = useState(0);
@@ -758,6 +809,8 @@ export default function PlaygroundPage() {
         onOpenAssistant={() => setAssistantOpen(true)}
         onToggleNotifications={toggleNotifications}
         notificationsOpen={notificationsOpen}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
       />
       <NotificationsPanel
         open={notificationsOpen}
@@ -772,6 +825,7 @@ export default function PlaygroundPage() {
           assistantOpen={assistantOpen}
           onToggleNotifications={toggleNotifications}
           notificationsOpen={notificationsOpen}
+          onOpenMobileNav={() => setMobileNavOpen(true)}
           breadcrumbs={[
             "Acme Corp",
             "Platform Engineering",

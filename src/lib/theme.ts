@@ -4,6 +4,14 @@ export type ColorMode = "light" | "dark";
 export const PRODUCT_NAME = "DigitalOcean";
 export const PRODUCT_LABEL = "DigitalOcean Control Panel";
 
+// Single mobile breakpoint used across the shell, panels, and pages.
+// Below this width, the chrome restructures: sidebar hides behind a
+// hamburger drawer, header drops to icon-only actions, and side panels
+// open as full-screen sheets.
+export const MOBILE_MAX = 768;
+export const MOBILE_MEDIA = `(max-width: ${MOBILE_MAX}px)`;
+export const MOBILE_DRAWER_WIDTH = 284;
+
 export interface ShellDims {
   sidebarCollapsed: number;
   sidebarOpen: number;

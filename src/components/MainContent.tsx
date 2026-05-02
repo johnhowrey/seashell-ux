@@ -40,6 +40,12 @@ const Wrapper = styled.main<{
     border-radius: ${p.$radius}px;
     margin: ${p.$gap}px;
   `}
+
+  @media (max-width: 768px) {
+    padding: 20px 16px;
+    margin: 0;
+    border-radius: 0;
+  }
 `;
 
 /* ─── Section heading ─── */
@@ -68,6 +74,11 @@ const VariantGrid = styled.div`
   @media (max-width: 920px) {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 `;
 
 const ColorGrid = styled.div`
@@ -75,8 +86,9 @@ const ColorGrid = styled.div`
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 
-  @media (max-width: 720px) {
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 `;
 

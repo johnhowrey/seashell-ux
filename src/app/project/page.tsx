@@ -4,11 +4,16 @@ import React, { useState } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import PageFrame from "@/components/PageFrame";
+import { MOBILE_MEDIA } from "@/lib/theme";
 
 const Page = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 24px 40px 80px;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 16px 16px 56px;
+  }
 `;
 
 /* ─── Project header ─── */
@@ -20,6 +25,13 @@ const ProjectHero = styled.div<{ $surface: string; $border: string }>`
   padding: 8px 0 20px;
   border-bottom: 1px solid ${(p) => p.$border};
   margin-bottom: 24px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 4px;
+    margin-bottom: 18px;
+  }
 `;
 
 const ProjectAvatar = styled.div`
@@ -114,6 +126,15 @@ const HeroActions = styled.div`
   display: flex;
   gap: 8px;
   align-items: center;
+
+  @media ${MOBILE_MEDIA} {
+    width: 100%;
+    button {
+      flex: 1;
+      padding-top: 11px;
+      padding-bottom: 11px;
+    }
+  }
 `;
 
 const HeroButton = styled.button<{ $primary?: boolean; $accent: string; $border: string; $color: string }>`
@@ -298,6 +319,15 @@ const InvestigationLead = styled.h1<{ $color: string }>`
     text-underline-offset: 4px;
     text-decoration-thickness: 1px;
   }
+
+  @media ${MOBILE_MEDIA} {
+    font-size: 21px;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+    strong {
+      text-underline-offset: 3px;
+    }
+  }
 `;
 
 const InvestigationProse = styled.p<{ $color: string }>`
@@ -356,6 +386,11 @@ const FocusActions = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+
+  @media ${MOBILE_MEDIA} {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const FocusPrimaryBtn = styled.button<{ $accent: string }>`
@@ -369,6 +404,12 @@ const FocusPrimaryBtn = styled.button<{ $accent: string }>`
   border-radius: 7px;
   cursor: pointer;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
@@ -381,6 +422,12 @@ const FocusGhostBtn = styled.button<{ $color: string; $border: string }>`
   border: 1px solid ${(p) => p.$border};
   border-radius: 7px;
   cursor: pointer;
+
+  @media ${MOBILE_MEDIA} {
+    padding: 12px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
 `;
 
 const FocusMore = styled.details<{ $color: string }>`
@@ -429,6 +476,12 @@ const ItemRow = styled.div<{ $border: string }>`
   padding: 16px 0;
   border-top: 1px solid ${(p) => p.$border};
   &:first-child { border-top: none; padding-top: 8px; }
+
+  @media ${MOBILE_MEDIA} {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 18px 0;
+  }
 `;
 
 const ItemChip = styled.span<{ $bg: string; $color: string }>`
@@ -445,6 +498,11 @@ const ItemChip = styled.span<{ $bg: string; $color: string }>`
   letter-spacing: 0.2px;
   text-align: center;
   white-space: nowrap;
+
+  @media ${MOBILE_MEDIA} {
+    justify-self: start;
+    align-self: flex-start;
+  }
 `;
 
 const ItemText = styled.div`
@@ -478,6 +536,12 @@ const ItemVerbBtn = styled.button<{ $accent: string }>`
   cursor: pointer;
   white-space: nowrap;
   &:hover { filter: brightness(0.95); }
+
+  @media ${MOBILE_MEDIA} {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
 `;
 
 const ProjectDetails = styled.details<{ $color: string }>`
@@ -502,6 +566,15 @@ const TabRow = styled.div<{ $border: string }>`
   gap: 4px;
   border-bottom: 1px solid ${(p) => p.$border};
   margin-bottom: 20px;
+
+  @media ${MOBILE_MEDIA} {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px 16px;
+    padding: 0 16px;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
 `;
 
 const Tab = styled.button<{ $active: boolean; $color: string; $accent: string }>`

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import {
@@ -8,6 +8,7 @@ import {
   notifications,
   notificationCategoryColors,
   NotifType,
+  MOBILE_MEDIA,
 } from "../lib/theme";
 import { icons } from "../lib/icons";
 
@@ -45,6 +46,37 @@ const Panel = styled.div<{ $surface: string; $border: string; $open: boolean }>`
     visibility 0s linear ${(p) => (p.$open ? "0s" : "0.22s")};
   visibility: ${(p) => (p.$open ? "visible" : "hidden")};
   z-index: 40;
+
+  /* Mobile: takeover the whole viewport. The notifications panel is the
+     primary surface, so a full-screen sheet is right — no point in
+     squeezing notifications into a 360px column when the screen is
+     390px wide. */
+  @media ${MOBILE_MEDIA} {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    border-right: none;
+    z-index: 220;
+    transform: translateY(${(p) => (p.$open ? "0" : "100%")});
+    transition: transform 0.24s cubic-bezier(0.2, 0, 0, 1),
+      visibility 0s linear ${(p) => (p.$open ? "0s" : "0.24s")};
+  }
+`;
+
+const Backdrop = styled.button<{ $open: boolean }>`
+  display: none;
+
+  @media ${MOBILE_MEDIA} {
+    display: ${(p) => (p.$open ? "block" : "none")};
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    border: none;
+    padding: 0;
+    z-index: 219;
+    cursor: pointer;
+  }
 `;
 
 const Head = styled.div<{ $border: string }>`
@@ -232,8 +264,22 @@ const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   onClose,
   dims,
 }) => {
+  // Lock background scroll on mobile while the full-screen sheet is up.
+  useEffect(() => {
+    if (!open) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia(MOBILE_MEDIA).matches) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [open]);
+
   return (
     <Gutter $open={open} aria-hidden={!open}>
+      <Backdrop $open={open} aria-hidden onClick={onClose} />
       <Panel $surface={dims.surfaceBg} $border={dims.borderLight} $open={open}>
         <Head $border={dims.borderLight}>
           <Title $dims={dims}>Notifications</Title>

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { ShellDims, assistantPrompts } from "../lib/theme";
+import { ShellDims, assistantPrompts, MOBILE_MEDIA } from "../lib/theme";
 import { icons } from "../lib/icons";
 
 interface DimProps {
@@ -16,6 +16,9 @@ interface DimProps {
  * This is what makes the rest of the page CONTENT shift when the panel
  * opens — the live behavior. The actual panel sits inside as an
  * absolute-positioned child so its content can extend to the edges.
+ *
+ * On mobile we collapse the gutter to zero and let the panel itself
+ * become a fixed full-screen overlay.
  */
 const Gutter = styled.div<{ $open: boolean }>`
   position: relative;
@@ -24,6 +27,11 @@ const Gutter = styled.div<{ $open: boolean }>`
   width: ${(p) => (p.$open ? "440px" : "0")};
   transition: width 0.22s cubic-bezier(0.2, 0, 0, 1);
   overflow: hidden;
+
+  @media ${MOBILE_MEDIA} {
+    width: 0;
+    overflow: visible;
+  }
 `;
 
 const Panel = styled.aside<{ $open: boolean; $surface: string }>`
@@ -37,6 +45,59 @@ const Panel = styled.aside<{ $open: boolean; $surface: string }>`
   transform: translateX(${(p) => (p.$open ? "0" : "100%")});
   transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1);
   overflow: hidden;
+
+  @media ${MOBILE_MEDIA} {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    border-left: none;
+    z-index: 220;
+    transform: translateY(${(p) => (p.$open ? "0" : "100%")});
+    visibility: ${(p) => (p.$open ? "visible" : "hidden")};
+    transition: transform 0.24s cubic-bezier(0.2, 0, 0, 1),
+      visibility 0s linear ${(p) => (p.$open ? "0s" : "0.24s")};
+  }
+`;
+
+const MobileHead = styled.div<{ $border: string }>`
+  display: none;
+
+  @media ${MOBILE_MEDIA} {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid ${(p) => p.$border};
+    flex-shrink: 0;
+  }
+`;
+
+const MobileHeadTitle = styled.span<DimProps>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: ${({ $dims }) => $dims.textPrimary};
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const MobileCloseBtn = styled.button<DimProps>`
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: ${({ $dims }) => $dims.textPrimary};
+
+  &:active {
+    background: rgba(0, 0, 0, 0.05);
+  }
 `;
 
 /* ────────────────────────────── Body ────────────────────────────── */
@@ -247,11 +308,37 @@ const AssistantPanel: React.FC<AssistantPanelProps> = ({
   dims,
 }) => {
   const [query, setQuery] = useState("");
-  void onClose;
+
+  // Lock body scroll while the assistant overlay is full-screen on mobile.
+  useEffect(() => {
+    if (!open) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia(MOBILE_MEDIA).matches) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [open]);
 
   return (
     <Gutter $open={open} aria-hidden={!open}>
       <Panel $open={open} $surface={dims.surfaceBg}>
+        <MobileHead $border={dims.borderLight}>
+          <MobileHeadTitle $dims={dims}>
+            <span style={{ color: dims.accent }}>{icons.sparkles}</span>
+            AI Assistant
+          </MobileHeadTitle>
+          <MobileCloseBtn
+            $dims={dims}
+            type="button"
+            aria-label="Close assistant"
+            onClick={onClose}
+          >
+            {icons.close}
+          </MobileCloseBtn>
+        </MobileHead>
         <Body>
           <WelcomeWave>👋</WelcomeWave>
           <WelcomeHeading $dims={dims}>

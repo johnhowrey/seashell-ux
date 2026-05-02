@@ -7,8 +7,11 @@ import Header from "./Header";
 import AssistantPanel from "./AssistantPanel";
 import NotificationsPanel from "./NotificationsPanel";
 import AccessibilityModal from "./AccessibilityModal";
-import { ColorMode, ShellVariant, getMergedDims } from "../lib/theme";
+import { ColorMode, ShellVariant, getMergedDims, MOBILE_MEDIA } from "../lib/theme";
 
+// On mobile we drop the Floating variant's outer gap and inner radii.
+// A 390px viewport has no room for "detached chrome" — the sidebar slides
+// in as a drawer overlay anyway, so the surface is the whole screen.
 const ShellContainer = styled.div<{ $gap: number; $bg: string; $radius: number }>`
   display: flex;
   width: 100%;
@@ -16,6 +19,12 @@ const ShellContainer = styled.div<{ $gap: number; $bg: string; $radius: number }
   overflow: hidden;
   background: ${(p) => p.$bg};
   ${(p) => p.$gap > 0 && `padding: ${p.$gap}px; gap: ${p.$gap}px;`}
+
+  @media ${MOBILE_MEDIA} {
+    padding: 0;
+    gap: 0;
+    height: 100dvh;
+  }
 `;
 
 const MainArea = styled.div<{ $radius: number }>`
@@ -24,6 +33,10 @@ const MainArea = styled.div<{ $radius: number }>`
   flex: 1;
   min-width: 0;
   ${(p) => p.$radius > 0 && `border-radius: ${p.$radius}px; overflow: hidden;`}
+
+  @media ${MOBILE_MEDIA} {
+    border-radius: 0;
+  }
 `;
 
 const ContentRow = styled.div`
@@ -64,6 +77,7 @@ export default function PageFrame({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [a11yOpen, setA11yOpen] = useState(false);
   const [activeA11y, setActiveA11y] = useState<string[]>([]);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const dims = getMergedDims(variant, colorMode);
   const isDark = colorMode === "dark" || variant === "floating";
@@ -73,6 +87,8 @@ export default function PageFrame({
     () => setNotificationsOpen((p) => !p),
     []
   );
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
+  const openMobileNav = useCallback(() => setMobileNavOpen(true), []);
   const toggleA11y = useCallback((id: string) => {
     setActiveA11y((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -107,6 +123,8 @@ export default function PageFrame({
           onOpenAssistant={() => setAssistantOpen(true)}
           onToggleNotifications={toggleNotifications}
           notificationsOpen={notificationsOpen}
+          mobileOpen={mobileNavOpen}
+          onMobileClose={closeMobileNav}
         />
         <NotificationsPanel
           open={notificationsOpen}
@@ -122,6 +140,7 @@ export default function PageFrame({
             onToggleNotifications={toggleNotifications}
             notificationsOpen={notificationsOpen}
             breadcrumbs={breadcrumbs}
+            onOpenMobileNav={openMobileNav}
           />
           <ContentRow>
             <Scroll $bg={dims.contentBg} $color={dims.textPrimary}>
