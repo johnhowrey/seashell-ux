@@ -79,13 +79,61 @@ const FocusBlock = styled.div<{ $surface: string; $border: string }>`
   margin-bottom: 4px;
 `;
 
-const FocusLead = styled.p<{ $color: string }>`
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-size: 17px;
-  line-height: 1.5;
+const FocusLead = styled.h2<{ $color: string }>`
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
   color: ${(p) => p.$color};
   margin: 0 0 18px;
-  strong { font-weight: 700; }
+  max-width: 780px;
+
+  strong {
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+`;
+
+// Inline AI-tool pill — gradient outline, monospace caps. Used to mark
+// rows the agent can resolve.
+const AgentTag = styled.span<{ $accent: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    ${(p) => p.$accent}1a 0%,
+    ${(p) => p.$accent}33 100%
+  );
+  border: 1px solid ${(p) => p.$accent}55;
+  color: ${(p) => p.$accent};
+  font-family: var(--font-jetbrains-mono), "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-top: 6px;
+
+  &::before {
+    content: "+";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: ${(p) => p.$accent};
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 10px;
+    line-height: 1;
+  }
 `;
 
 const FocusActions = styled.div`
@@ -813,9 +861,11 @@ export default function DropletsListPage() {
 
           <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
             <FocusLead $color={dims.textPrimary}>
-              {droplets.length - 5} of {droplets.length} Droplets are running
-              smoothly. <strong>5 things to handle.</strong> Three of them
-              are the same fix and the agent can run them.
+              {droplets.length - 5} of {droplets.length} Droplets are humming
+              along. The one to deal with is{" "}
+              <strong>web-prod-3 — stuck provisioning for 24 minutes</strong>{" "}
+              when 3 is normal. Three more (no backups, an idle dev
+              sandbox) are the same fix and the agent can run them.
             </FocusLead>
             <FocusActions>
               <FocusPrimaryBtn $accent={dims.accent} type="button">
@@ -857,6 +907,7 @@ export default function DropletsListPage() {
                 <ItemEvidence $color={dims.textSecondary}>
                   Production tag, no snapshot policy. Nightly is $1.20 / mo.
                 </ItemEvidence>
+                <AgentTag $accent={dims.accent}>Backup Manager</AgentTag>
               </ItemText>
               <ItemVerbBtn type="button" $accent={dims.accent}>
                 Enable
@@ -872,6 +923,7 @@ export default function DropletsListPage() {
                 <ItemEvidence $color={dims.textSecondary}>
                   Production tag, no snapshot policy. Nightly is $1.20 / mo.
                 </ItemEvidence>
+                <AgentTag $accent={dims.accent}>Backup Manager</AgentTag>
               </ItemText>
               <ItemVerbBtn type="button" $accent={dims.accent}>
                 Enable
@@ -887,6 +939,7 @@ export default function DropletsListPage() {
                 <ItemEvidence $color={dims.textSecondary}>
                   Production tag, no snapshot policy. Nightly is $1.20 / mo.
                 </ItemEvidence>
+                <AgentTag $accent={dims.accent}>Backup Manager</AgentTag>
               </ItemText>
               <ItemVerbBtn type="button" $accent={dims.accent}>
                 Enable
@@ -902,6 +955,7 @@ export default function DropletsListPage() {
                 <ItemEvidence $color={dims.textSecondary}>
                   Off 32 days, still costing $5 / mo. Destroy or resize down.
                 </ItemEvidence>
+                <AgentTag $accent={dims.accent}>Cost Optimizer</AgentTag>
               </ItemText>
               <ItemVerbBtn type="button" $accent={dims.accent}>
                 Destroy

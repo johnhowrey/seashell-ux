@@ -267,6 +267,73 @@ const AttentionBtn = styled.button<{ $primary?: boolean; $accent: string; $borde
       : `background: transparent; color: ${p.$color}; border: 1px solid ${p.$border};`}
 `;
 
+/* ─── Investigation block (DO Next "Investigation complete:" pattern) ─── */
+const InvestigationBlock = styled.section`
+  margin: 4px 0 28px;
+  max-width: 880px;
+`;
+
+const InvestigationKicker = styled.div<{ $color: string }>`
+  font-family: var(--font-jetbrains-mono), "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: ${(p) => p.$color};
+  margin-bottom: 10px;
+`;
+
+const InvestigationLead = styled.h1<{ $color: string }>`
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
+  color: ${(p) => p.$color};
+  margin: 0 0 18px;
+
+  strong {
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+`;
+
+const InvestigationProse = styled.p<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: ${(p) => p.$color};
+  margin: 0 0 16px;
+  max-width: 760px;
+
+  strong { font-weight: 600; color: inherit; }
+`;
+
+const ConfidencePill = styled.span<{ $bg: string; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+
+  &::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.9;
+  }
+`;
+
 /* ─── Focus block (action-first hero) ─── */
 // No surrounding border — the focus block sits in flow with whitespace.
 const FocusBlock = styled.div<{ $surface: string; $border: string }>`
@@ -859,6 +926,9 @@ export default function ProjectHomePage() {
             <ProjectInfo>
               <NameRow>
                 <ProjectName $color={dims.textPrimary}>roadtrip-copilot</ProjectName>
+                <StatusPill $bg={dims.mintSoft} $color={dims.mintInk}>
+                  Healthy
+                </StatusPill>
                 <StatusPill $bg="#fef3c7" $color="#92400e">
                   3 to review
                 </StatusPill>
@@ -910,12 +980,29 @@ export default function ProjectHomePage() {
 
           {tab === "Overview" && (
             <>
+              <InvestigationBlock>
+                <InvestigationKicker $color={dims.textMuted}>
+                  Investigation complete
+                </InvestigationKicker>
+                <InvestigationLead $color={dims.textPrimary}>
+                  Production is serving traffic, but{" "}
+                  <strong>copilot-db-prod will run out of disk in ~12 days</strong>{" "}
+                  if you don&rsquo;t act.
+                </InvestigationLead>
+                <InvestigationProse $color={dims.textSecondary}>
+                  Storage on copilot-db-prod has climbed from{" "}
+                  <strong>54% → 87%</strong> over the past 14 days at a steady{" "}
+                  <strong>0.6 GB / day</strong> write rate. Two ancillary
+                  things — a pending security patch on web-prod-2 and an
+                  earlier deploy failure with no RCA — are mechanical and the
+                  agent can run them tonight.
+                </InvestigationProse>
+                <ConfidencePill $bg={dims.mintSoft} $color={dims.mintInk}>
+                  High confidence
+                </ConfidencePill>
+              </InvestigationBlock>
+
               <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
-                <FocusLead $color={dims.textPrimary}>
-                  Production is serving traffic.{" "}
-                  <strong>3 things to handle.</strong> Two are mechanical and
-                  the agent can run them.
-                </FocusLead>
                 <FocusActions>
                   <FocusPrimaryBtn $accent={dims.accent} type="button">
                     Run the maintenance batch (resize + patch)

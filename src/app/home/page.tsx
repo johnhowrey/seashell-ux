@@ -12,27 +12,117 @@ const Page = styled.div`
   padding: 28px 40px 80px;
 `;
 
+// "Hey, John. Hope your week's been going well." — small standup-style
+// greeting that sets the conversational tone borrowed from the DO Next
+// vision. The big block underneath does the work of telling the user
+// what's up in plain prose with inline-bold action terms.
 const Greeting = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 28px;
+  gap: 6px;
+  margin-bottom: 16px;
 `;
 
-const GreetH1 = styled.h1<{ $color: string }>`
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-  color: ${(p) => p.$color};
-  margin: 0;
-`;
-
-const GreetSub = styled.p<{ $color: string }>`
+const GreetH1 = styled.p<{ $color: string }>`
   font-family: var(--font-inter), "Inter", sans-serif;
   font-size: 14px;
+  font-weight: 500;
   color: ${(p) => p.$color};
   margin: 0;
+`;
+
+const StandupLead = styled.h1<{ $color: string }>`
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.3;
+  letter-spacing: -0.4px;
+  color: ${(p) => p.$color};
+  margin: 0 0 22px;
+  max-width: 780px;
+
+  strong {
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+`;
+
+// AI-tool pill — gradient outline + monospace ALL CAPS label + leading
+// "+" glyph. Same shape as the live "STORAGE MONITOR" / "MIGRATION
+// ASSISTANT" callouts in the DO Next dashboard.
+const AgentPill = styled.span<{ $accent: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    ${(p) => p.$accent}1a 0%,
+    ${(p) => p.$accent}33 100%
+  );
+  border: 1px solid ${(p) => p.$accent}55;
+  color: ${(p) => p.$accent};
+  font-family: var(--font-jetbrains-mono), "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+
+  &::before {
+    content: "+";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: ${(p) => p.$accent};
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 11px;
+    line-height: 1;
+  }
+`;
+
+const ItemReason = styled.div<{ $color: string }>`
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: ${(p) => p.$color};
+  margin-top: 6px;
+
+  strong {
+    font-weight: 600;
+    color: inherit;
+  }
+`;
+
+const MintPill = styled.span<{ $bg: string; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
+  }
 `;
 
 const KpiGrid = styled.div`
@@ -611,16 +701,20 @@ export default function WorkspaceHomePage() {
       {({ dims, isDark }) => (
         <Page>
           <Greeting>
-            <GreetH1 $color={dims.textPrimary}>
-              Good morning, John 👋
+            <GreetH1 $color={dims.textSecondary}>
+              Hey, John. Hope your week&rsquo;s been going well.
             </GreetH1>
           </Greeting>
 
+          <StandupLead $color={dims.textPrimary}>
+            <AgentPill $accent={dims.accent}>Cost Optimizer</AgentPill>{" "}
+            spotted <strong>$18 / month</strong> in idle compute, your{" "}
+            <strong>4 production Droplets</strong> still need backups, and{" "}
+            <strong>llama-3 inference</strong> is running 60% slower than it
+            could on a dedicated SFO3 instance.
+          </StandupLead>
+
           <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
-            <FocusLead $color={dims.textPrimary}>
-              <strong>4 things on your plate this week.</strong> 3 are routine
-              and the agent can handle them.
-            </FocusLead>
             <FocusActions>
               <FocusPrimaryBtn $accent={dims.accent} type="button">
                 Let AI handle the 3 routine ones
@@ -637,7 +731,7 @@ export default function WorkspaceHomePage() {
 
           <ItemList>
             <ItemRow $border={dims.borderLight}>
-              <ItemChip $bg="#dcfce7" $color="#166534">
+              <ItemChip $bg={dims.mintSoft} $color={dims.mintInk}>
                 $18 / mo
               </ItemChip>
               <ItemText>
@@ -647,6 +741,11 @@ export default function WorkspaceHomePage() {
                 <ItemEvidence $color={dims.textSecondary}>
                   web-dev-1 + web-dev-2 averaged 4% CPU over the last 30 days.
                 </ItemEvidence>
+                <ItemReason $color={dims.textMuted}>
+                  <strong>Why this?</strong> Cost Optimizer flagged sustained
+                  &lt; 5% CPU on production-tagged droplets — high confidence
+                  the workload fits a smaller plan.
+                </ItemReason>
               </ItemText>
               <ItemVerbLink href="/droplets" $accent={dims.accent}>
                 Right-size
@@ -664,6 +763,11 @@ export default function WorkspaceHomePage() {
                 <ItemEvidence $color={dims.textSecondary}>
                   main-postgres, web-prod-1/2, api-server. Nightly is $1.20 / mo each.
                 </ItemEvidence>
+                <ItemReason $color={dims.textMuted}>
+                  <strong>Why this?</strong> Production tag with no snapshot
+                  policy. Teams of your size keep nightly backups on 96% of
+                  prod resources.
+                </ItemReason>
               </ItemText>
               <ItemVerbLink href="/droplets/web-prod-1" $accent={dims.accent}>
                 Enable
@@ -681,6 +785,11 @@ export default function WorkspaceHomePage() {
                 <ItemEvidence $color={dims.textSecondary}>
                   320 ms p95 today. A dedicated SFO3 instance hits 130 ms.
                 </ItemEvidence>
+                <ItemReason $color={dims.textMuted}>
+                  <strong>Why this?</strong> Your traffic shape (steady 40
+                  req/s) is the cutover point where dedicated beats
+                  serverless on both latency and cost.
+                </ItemReason>
               </ItemText>
               <ItemVerbLink href="/playground" $accent={dims.accent}>
                 See plans
@@ -699,12 +808,20 @@ export default function WorkspaceHomePage() {
                   Requested as reviewer on 3 PRs in roadtrip-copilot since
                   Tuesday.
                 </ItemEvidence>
+                <ItemReason $color={dims.textMuted}>
+                  <strong>Why this?</strong> Three PRs sat idle for 4+ days
+                  waiting on a reviewer who isn&rsquo;t on the team yet.
+                </ItemReason>
               </ItemText>
               <ItemVerbLink href="/onboarding" $accent={dims.accent}>
                 Invite
               </ItemVerbLink>
             </ItemRow>
           </ItemList>
+
+          <MintPill $bg={dims.mintSoft} $color={dims.mintInk}>
+            All 4 routine items are agent-handleable with high confidence
+          </MintPill>
 
           <SnapshotDetails $color={dims.textMuted}>
             <summary>Today&rsquo;s snapshot — KPIs, recent activity, spend, getting started</summary>

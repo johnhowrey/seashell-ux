@@ -772,14 +772,46 @@ const FocusBlock = styled.div<{ $surface: string; $border: string }>`
   margin: 0 0 4px;
 `;
 
-const FocusLead = styled.p<{ $color: string }>`
-  font-family: var(--font-inter), "Inter", sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+const FocusLead = styled.h2<{ $color: string }>`
+  font-family: var(--font-epilogue), "Epilogue", sans-serif;
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
   color: ${(p) => p.$color};
-  margin: 0 0 14px;
+  margin: 0 0 18px;
+  max-width: 780px;
 
-  strong { font-weight: 700; }
+  strong {
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+`;
+
+const InboxConfidencePill = styled.span<{ $bg: string; $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: ${(p) => p.$bg};
+  color: ${(p) => p.$color};
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  margin-top: 6px;
+
+  &::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
+  }
 `;
 
 const FocusActions = styled.div`
@@ -1086,11 +1118,12 @@ const InboxQueue: React.FC<InboxQueueProps> = ({ dims }) => {
     <>
       <FocusBlock $surface={dims.surfaceBg} $border={dims.borderLight}>
         <FocusLead $color={dims.textPrimary}>
-          Your AI Agent already handled <strong>{handledCount}</strong>.{" "}
-          <strong>
-            {remaining.length} need{remaining.length === 1 ? "s" : ""} you.
-          </strong>{" "}
-          Quick clear:
+          Phew — your agent already cleared{" "}
+          <strong>{handledCount} of {handledCount + total}</strong>.{" "}
+          {remaining.length === 1
+            ? "One needs a yes from you,"
+            : `${remaining.length} need a yes from you,`}{" "}
+          then you&rsquo;re done.
         </FocusLead>
         <FocusActions>
           {remainingAi.length > 0 && (
@@ -1137,6 +1170,14 @@ const InboxQueue: React.FC<InboxQueueProps> = ({ dims }) => {
                 <ItemEvidence $color={dims.textSecondary}>
                   {item.evidence}
                 </ItemEvidence>
+                {item.kind === "ai" && (
+                  <InboxConfidencePill
+                    $bg={dims.mintSoft}
+                    $color={dims.mintInk}
+                  >
+                    High confidence
+                  </InboxConfidencePill>
+                )}
               </ItemText>
               <ItemSnooze
                 $color={dims.textMuted}

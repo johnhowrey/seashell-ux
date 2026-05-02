@@ -22,6 +22,9 @@ export interface ShellDims {
   accentHover: string;
   createBg: string;
   createHover: string;
+  mint: string;
+  mintSoft: string;
+  mintInk: string;
 }
 
 // Variant defines LAYOUT only — sizes, radius, gap, plus two flags that
@@ -102,6 +105,10 @@ export const shellVariants: Record<
 
 // ColorPalette is the complete set of colors used by the shell. Every value
 // here applies in every variant — variants only change layout/sizing/flags.
+//
+// `mint` and `mintSoft` are inspired by the DO Next vision case study —
+// used for confidence pills, AI-handled / completed states, and the
+// "Run a test simulation" secondary CTA.
 export interface ColorPalette {
   name: string;
   description: string;
@@ -116,6 +123,9 @@ export interface ColorPalette {
   accentHover: string;
   createBg: string;
   createHover: string;
+  mint: string;
+  mintSoft: string;
+  mintInk: string;       // text on mint backgrounds
 }
 
 export const colorModes: Record<ColorMode, ColorPalette> = {
@@ -133,6 +143,9 @@ export const colorModes: Record<ColorMode, ColorPalette> = {
     accentHover: "#0050d8",
     createBg: "#00879b",
     createHover: "#00707f",
+    mint: "#0ac2a0",
+    mintSoft: "#d8f5ee",
+    mintInk: "#066b58",
   },
   dark: {
     name: "Dark",
@@ -148,6 +161,9 @@ export const colorModes: Record<ColorMode, ColorPalette> = {
     accentHover: "#6d28d9",
     createBg: "#00879b",
     createHover: "#00707f",
+    mint: "#3ae6c0",
+    mintSoft: "rgba(58, 230, 192, 0.16)",
+    mintInk: "#9af0d6",
   },
 };
 
@@ -181,6 +197,9 @@ export function getMergedDims(
     accentHover: cm.accentHover,
     createBg: cm.createBg,
     createHover: cm.createHover,
+    mint: cm.mint,
+    mintSoft: cm.mintSoft,
+    mintInk: cm.mintInk,
   };
 }
 
